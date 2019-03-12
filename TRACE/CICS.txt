@@ -1,0 +1,447 @@
+CICS Sample Programs Part-1 
+1.  FETCH RECORDS BY USIING DYNAMIC IN KSDS CLUSTER
+2.  Single Record read file handling in CICS
+3.  Header and Footer Program in CICS
+4.  XCTL Program in CICS
+5. CICS LINK Program
+6. CICS Function Key(EIBAID) Program's
+7. ADD Program in CICS-COBOL:
+
+FETCH RECORDS BY USIING DYNAMIC IN KSDS CLUSTER
+  IDENTIFICATION DIVISION.          
+  PROGRAM-ID. SEARCHS.              
+  ENVIRONMENT DIVISION.             
+  INPUT-OUTPUT SECTION.             
+  FILE-CONTROL.                     
+          SELECT IN-FILE ASSIGN TO DD1  
+          ORGANIZATION IS INDEXED       
+          ACCESS MODE IS DYNAMIC        
+          RECORD KEY IS ENO             
+          FILE STATUS IS FS1.           
+  DATA DIVISION.                    
+  FILE SECTION.                     
+  FD IN-FILE.                       
+  01 IN-REC.                        
+    02 ENO PIC 9(4).                
+    02 ENAME PIC X(4).              
+    02 SAL PIC 9(5).
+    02 FILLER PIC X(67).                      
+ WORKING-STORAGE SECTION.                    
+ 77 FS1 PIC 9(2).                            
+ 77 REL-KEY PIC 9.                           
+ 01 IN-REC1.                                 
+    03 ENO1 PIC 9(4).                         
+    03 ENAME1 PIC X(4).                       
+    03 SAL1 PIC 9(5).                         
+    03 FILLER PIC X(67).                      
+ PROCEDURE DIVISION.                         
+            PERFORM OPEN-PARA.                      
+           MOVE 0003 TO ENO                      
+           START IN-FILE                           
+           KEY IS = ENO                          
+           INVALID KEY GO TO CLOSE-PARA.        
+           PERFORM SEARCH-PARA.                  
+ OPEN-PARA.                                  
+          OPEN I-O IN-FILE.                       
+  SEARCH-PARA.                              
+               READ IN-FILE NEXT RECORD INTO IN-REC1 
+               AT END DISPLAY "END".                 
+               IF ENO = ENO1                         
+               MOVE IN-REC TO IN-REC1                
+               DISPLAY IN-REC1                       
+               ELSE                                  
+               DISPLAY "NOT FOUND"                   
+               GO TO SEARCH-PARA.                    
+ CLOSE-PARA.                               
+             CLOSE IN-FILE.                        
+
+Single Record read file handling in CICS
+ ID DIVISION.                            
+  PROGRAM-ID. AD12GM.                     
+  DATA DIVISION.                          
+  WORKING-STORAGE SECTION.                
+  COPY FILE01.                            
+  COPY FILE02.                            
+  01 COMMAREA.                            
+      02 VARS PIC X(4).                   
+  01 REC1.                                
+      02 EID2 PIC X(4).                   
+      02 FILLER PIC X.                    
+      02 ENAME2 PIC X(10).                
+      02 FILLER PIC X.                    
+      02 ESAL2 PIC 9(5).                  
+      02 FILLER PIC X(59).                
+  77 LENG PIC S9(4) COMP.                 
+  PROCEDURE DIVISION.                     
+      MOVE LOW-VALUES TO FILEI.           
+      MOVE LOW-VALUES TO FILE1I.          
+      MOVE LOW-VALUES TO FILEO.           
+      MOVE LOW-VALUES TO FILE1O.          
+      EXEC CICS SEND                      
+           MAP('FILE1')                   
+            MAPSET('FILE02')               
+            ERASE                          
+       END-EXEC.                           
+       PERFORM READ-PARA.                  
+       EXEC CICS SEND                      
+            MAP('FILE')                    
+            MAPSET('FILE01')               
+       END-EXEC.                           
+       EXEC CICS RETURN END-EXEC.          
+       STOP RUN.                           
+   READ-PARA.                              
+       EXEC CICS RECEIVE                   
+            MAP('FILE1')                   
+            MAPSET('FILE02')               
+       END-EXEC.                           
+       MOVE EID1I TO EID2.                 
+       EXEC CICS READ                      
+            FILE('FILE001')                
+            INTO(REC1)                     
+            RIDFLD(EID2)                   
+            LENGTH(LENGTH OF REC1)         
+       END-EXEC.                           
+       MOVE EID2 TO EIDO.                  
+       MOVE ENAME2 TO ENAMEO.              
+       MOVE ESAL2 TO ESALO.                
+
+
+map1:
+                    
+ FILE02  DFHMSD TYPE=&SYSPARM,                                          X
+                MODE=INOUT,                                             X
+                TIOAPFX=YES,                                            X
+                STORAGE=AUTO,                                           X
+                LANG=COBOL,                                             X
+                CTRL=(FRSET,FREEKB)                                     
+ FILE1   DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                            
+         DFHMDF INITIAL='EMP DETAIL',POS=(1,35),LENGTH=10,ATTRB=ASKIP   
+         DFHMDF INITIAL='ENTER EMP NO :',POS=(06,11),LENGTH=14,         X
+                ATTRB=PROT                                              
+ EID1    DFHMDF POS=(06,26),LENGTH=4,ATTRB=(UNPROT,IC),                 X
+                INITIAL='____'                                          
+ MSG1    DFHMDF POS=(10,11),LENGTH=18,ATTRB=UNPROT                      
+ FILE02  DFHMSD TYPE=FINAL                                              
+                END
+
+Symbolic map for map1(Map name):
+
+ 01  FILE1I.                          
+     02  FILLER PIC            PIC X(12).            
+     02  EID1L    COMP         PIC S9(4).   
+     02  EID1F    PICTURE      PIC X(01).          
+     02  FILLER REDEFINES EID1F.      
+         03 EID1A              PIC X(01).         
+     02  EID1I                 PIC X(04).             
+     02  MSG1L    COMP         PIC S9(04).   
+     02  MSG1F    PICTURE X.          
+     02  FILLER REDEFINES MSG1F.      
+         03 MSG1A    PICTURE X.         
+     02  MSG1I  PIC X(18).            
+ 01  FILE1O REDEFINES FILE1I.         
+     02  FILLER PIC X(12).            
+     02  FILLER PICTURE X(3).         
+     02  EID1O  PIC X(4).             
+     02  FILLER PICTURE X(3).         
+     02  MSG1O  PIC X(18).             
+
+map2:
+
+ FILE01  DFHMSD TYPE=&SYSPARM,                                          X
+                MODE=INOUT,                                             X
+                TIOAPFX=YES,                                            X
+                STORAGE=AUTO,                                           X
+                LANG=COBOL,                                             X
+                CTRL=(FRSET,FREEKB)                                     
+ FILE    DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                            
+         DFHMDF INITIAL='EMP DETAIL',POS=(1,35),LENGTH=10,ATTRB=ASKIP   
+         DFHMDF INITIAL='EMP ID    :',POS=(03,11),LENGTH=11,ATTRB=ASKIP 
+ EID     DFHMDF POS=(03,24),LENGTH=4,ATTRB=(UNPROT,IC),                 X
+                INITIAL='____'                                          
+         DFHMDF INITIAL='EMP NAME  :',POS=(05,11),LENGTH=11,ATTRB=ASKIP 
+ ENAME   DFHMDF POS=(05,24),LENGTH=10,ATTRB=UNPROT,                     X
+                INITIAL='__________'                                    
+         DFHMDF INITIAL='EMP SALARY:',POS=(07,11),                      X
+                LENGTH=11,ATTRB=PROT                                    
+ ESAL    DFHMDF POS=(07,24),ATTRB=(UNPROT,NUM),                         X
+                LENGTH=05,                                              X
+                INITIAL='_____'                                         
+ MSG     DFHMDF POS=(10,11),LENGTH=18,ATTRB=UNPROT                      
+ FILE01  DFHMSD TYPE=FINAL                                              
+                END                                                     
+
+Symbolic map for map2(Map name):
+
+01  FILEI.                                            
+     02  FILLER PIC X(12).                             
+     02  EIDL    COMP  PIC  S9(4).                     
+     02  EIDF    PICTURE X.                            
+     02  FILLER REDEFINES EIDF.                        
+       03 EIDA    PICTURE X.                           
+     02  EIDI  PIC X(4).                               
+     02  ENAMEL    COMP  PIC  S9(4).                   
+     02  ENAMEF    PICTURE X.                          
+     02  FILLER REDEFINES ENAMEF.                      
+       03 ENAMEA    PICTURE X.                         
+     02  ENAMEI  PIC X(10).                            
+     02  ESALL    COMP  PIC  S9(4).                    
+     02  ESALF    PICTURE X.                           
+     02  FILLER REDEFINES ESALF.                       
+       03 ESALA    PICTURE X.                          
+     02  ESALI  PIC X(5).                              
+     02  MSGL    COMP  PIC  S9(4).                     
+     02  MSGF    PICTURE X.                            
+     02  FILLER REDEFINES MSGF.                        
+       03 MSGA    PICTURE X.                           
+     02  MSGI  PIC X(18).      
+ 01  FILEO REDEFINES FILEI.    
+     02  FILLER PIC X(12).     
+     02  FILLER PICTURE X(3).  
+     02  EIDO  PIC X(4).       
+     02  FILLER PICTURE X(3).  
+     02  ENAMEO  PIC X(10).    
+     02  FILLER PICTURE X(3).  
+     02  ESALO  PIC X(5).      
+     02  FILLER PICTURE X(3).  
+     02  MSGO  PIC X(18).   
+
+Header and Footer Program in CICS
+ ID DIVISION.                                    
+ PROGRAM-ID. AD12GM.                             
+ DATA DIVISION.                                  
+ WORKING-STORAGE SECTION.                        
+ 01 RES.                                         
+     02 A PIC 9(3).                              
+     02 B PIC 9(3).                              
+     02 C PIC 9(4).                              
+ 77 Z PIC X(80).                                 
+ 01 REC.                                         
+     02 MSG PIC X(79) VALUE SPACES.              
+ 01 TEXT-HDR.                                    
+     02 LEN PIC S9(4) COMP VALUE 79.             
+     02 FILLER PIC X VALUE '&'.                  
+     02 FILLER PIC X.                            
+     02 FILLER PIC X(79) VALUE "INDIAN AIRLINES".
+ 01 TEXT-TR.                                     
+     02 LENG PIC S9(4) COMP VALUE 79.            
+     02 FILLER PIC X VALUE '&'.                  
+     02 FILLER PIC X.                            
+     02 FLLLER PIC X(79) VALUE "THANKYOU".       
+ 77 LENGT PIC S9(4) COMP.                        
+ PROCEDURE DIVISION.                             
+     PERFORM PARA1 5 TIMES.                      
+ PARA1.                       
+       MOVE "WELCOME TO CHENNAI" TO REC.    
+       MOVE 79 TO LENGT.                    
+       EXEC CICS SEND TEXT FROM(REC)        
+            HEADER(TEXT-HDR)                
+            ACCUM                           
+            PAGING                          
+            ERASE                           
+       END-EXEC.                            
+   PARA2.                                   
+       EXEC CICS SEND PAGE                  
+       TRAILER(TEXT-TR)                     
+       END-EXEC.                            
+       EXEC CICS RETURN END-EXEC.
+
+XCTL Program in CICS
+Main Program: 
+
+ ID DIVISION.                                                   
+ PROGRAM-ID. HAS.                                               
+ DATA DIVISION.                                                 
+ WORKING-STORAGE SECTION.                                       
+ 77 TID PIC X(4).                                               
+ 77 MSG PIC X(50) VALUE 'IMPORTANT OF LINK PROGRAM'.            
+ 77 A PIC X(35) VALUE 'THIS IS MAIN PROGRAM'.                   
+ 77 B PIC X(35) VALUE 'NOW CONTROL MOVE TO SUB'.                
+ PROCEDURE DIVISION.                                            
+     EXEC CICS RECEIVE INTO (TID) LENGTH(LENGTH OF TID) END-EXEC.
+     EXEC CICS SEND FROM(MSG) END-EXEC.                         
+     EXEC CICS RECEIVE END-EXEC.                                
+     EXEC CICS SEND FROM(A) ERASE END-EXEC.                     
+     EXEC CICS RECEIVE END-EXEC.                                
+     EXEC CICS SEND FROM(B) END-EXEC.                           
+     EXEC CICS RECEIVE END-EXEC.                                
+     EXEC CICS XCTL                                             
+          PROGRAM('SUB')                                        
+          END-EXEC.                                             
+     EXEC CICS RETURN END-EXEC.                                 
+
+Sub Program:
+
+  ID DIVISION.                               
+  PROGRAM-ID. SEN.                           
+  DATA DIVISION.                             
+  WORKING-STORAGE SECTION.                   
+  77 D PIC X(35) VALUE 'THIS IS SUB PROGRAM'.
+  77 E PIC X(50) VALUE 'NOW CONTROL TO MAIN'.
+  77 C PIC X(40) VALUE 'THANK U BYE'.        
+  PROCEDURE DIVISION.                        
+      EXEC CICS SEND FROM(D) END-EXEC.       
+      EXEC CICS RECEIVE END-EXEC.            
+      EXEC CICS SEND FROM(E) END-EXEC.       
+      EXEC CICS RECEIVE END-EXEC.            
+      EXEC CICS SEND FROM(C) END-EXEC.       
+      EXEC CICS RECEIVE END-EXEC.            
+      EXEC CICS RETURN END-EXEC.  
+CICS LINK Program
+
+Main Program:
+
+ ID DIVISION.                                                    
+ PROGRAM-ID. HAS.                                                
+ DATA DIVISION.                                                  
+ WORKING-STORAGE SECTION.                                        
+ 77 TID PIC X(4).                                                
+ 77 MSG PIC X(50) VALUE 'IMPORTANT OF LINK PROGRAM'.             
+ 77 A PIC X(35) VALUE 'THIS IS MAIN PROGRAM'.                    
+ 77 B PIC X(35) VALUE 'NOW CONTROL MOVE TO SUB'.                 
+ 77 C PIC X(40) VALUE 'THANK U BYE'.                             
+ PROCEDURE DIVISION.                                             
+     EXEC CICS RECEIVE INTO (TID) LENGTH(LENGTH OF TID) END-EXEC.
+     EXEC CICS SEND FROM(MSG) END-EXEC.                          
+     EXEC CICS RECEIVE END-EXEC.                                 
+     EXEC CICS SEND FROM(A) ERASE END-EXEC.                      
+     EXEC CICS RECEIVE END-EXEC.                                 
+     EXEC CICS SEND FROM(B) END-EXEC.                            
+     EXEC CICS RECEIVE END-EXEC.                                 
+     EXEC CICS LINK                                              
+          PROGRAM('SUB')                                         
+          END-EXEC.                                              
+     EXEC CICS SEND FROM(C) ERASE END-EXEC.                      
+     EXEC CICS RECEIVE END-EXEC.                                 
+     EXEC CICS RETURN END-EXEC.                                  
+
+Sub Program for LINK
+
+  ID DIVISION.                                
+  PROGRAM-ID. SEN.                            
+  DATA DIVISION.                              
+  WORKING-STORAGE SECTION.                    
+  77 D PIC X(35) VALUE 'THIS IS SUB PROGRAM'. 
+  77 E PIC X(50) VALUE 'NOW CONTROL TO MAIN'. 
+   PROCEDURE DIVISION.                         
+      EXEC CICS SEND FROM(D) END-EXEC.        
+      EXEC CICS RECEIVE END-EXEC.             
+      EXEC CICS SEND FROM(E) END-EXEC.        
+      EXEC CICS RECEIVE END-EXEC.             
+      EXEC CICS RETURN END-EXEC.  
+
+CICS Function Key(EIBAID) Program's
+ID DIVISION.                                 
+ PROGRAM-ID. AD12GM.                         
+ DATA DIVISION.                               
+ WORKING-STORAGE SECTION.                     
+     COPY ADD001.                             
+ 01 RES.                                     
+     02 A PIC 9(3).                           
+     02 B PIC 9(3).                           
+     02 C PIC 9(4).                           
+ 77 Z PIC X(80).                             
+ PROCEDURE DIVISION.                         
+     MOVE LOW-VALUES TO ADD1I.               
+     MOVE LOW-VALUES TO ADD1O.               
+     EXEC CICS                               
+         SEND MAP('ADD1') MAPSET('ADD001')   
+     END-EXEC.                               
+ MAIN-PARA.                                   
+     EXEC CICS HANDLE AID                     
+         PF1(ADD-PARA)                       
+         PF2(SUB-PARA)                       
+         ANYKEY(E-PARA)                       
+     END-EXEC.                               
+     EXEC CICS                               
+         RECEIVE MAP('ADD1') MAPSET('ADD001') 
+     END-EXEC.                               
+ ADD-PARA.                                       
+     MOVE NO1I TO A.                             
+     MOVE NO2I TO B.                             
+     COMPUTE C = A + B.                           
+     MOVE C TO RESO.                             
+     MOVE 'ADD SUCCESSFUL' TO MSGO.               
+     EXEC CICS                                   
+         SEND MAP('ADD1') MAPSET('ADD001')       
+         ERASE                                   
+     END-EXEC.                                   
+     EXEC CICS RETURN END-EXEC.                   
+ SUB-PARA.                                       
+     MOVE NO1I TO A.                             
+     MOVE NO2I TO B.                             
+     COMPUTE C = A - B.                           
+     MOVE C TO RESO.                             
+     MOVE 'SUB SUCCESSFUL' TO MSGO.               
+     EXEC CICS                                   
+         SEND MAP('ADD1') MAPSET('ADD001')       
+         ERASE                                   
+     END-EXEC.                                   
+     EXEC CICS RETURN END-EXEC.                   
+ E-PARA.                                         
+     MOVE 'PRESS F1 AND F2' TO MSGO.             
+     EXEC CICS SEND                               
+         SEND MAP('ADD1') MAPSET('ADD001')       
+          ERASE
+       END-EXEC.   
+      go to main-para.
+
+ADD Program in CICS-COBOL:
+
+ ID DIVISION.                                   
+ PROGRAM-ID. AD12GM.                           
+ DATA DIVISION.                                 
+ WORKING-STORAGE SECTION.                       
+     COPY ADD001.                               
+ 01 RES.                                       
+     02 A PIC 9(3).                             
+     02 B PIC 9(3).                             
+     02 C PIC 9(4).                             
+ 77 Z PIC X(80).                               
+ PROCEDURE DIVISION.                           
+     MOVE LOW-VALUES TO ADD1I.                 
+     MOVE LOW-VALUES TO ADD1O.                 
+     EXEC CICS                                 
+         SEND MAP('ADD1') MAPSET('ADD001')     
+     END-EXEC.                                 
+     EXEC CICS                                 
+         RECEIVE MAP('ADD1') MAPSET('ADD001')   
+     END-EXEC.                                 
+     MOVE NO1I TO A.                           
+     MOVE NO2I TO B.                           
+     COMPUTE C = A + B.                         
+     MOVE C TO RESO.                           
+     EXEC CICS                                 
+         SEND MAP('ADD1') MAPSET('ADD001')     
+        ERASE                     
+    END-EXEC.                     
+    EXEC CICS RETURN END-EXEC.   
+
+Map for Addtion:
+
+ADD001  DFHMSD TYPE=&SYSPARM,                                                  X
+                 MODE=INOUT,                                                   X
+                 TIOAPFX=YES,                                                  X
+                 STORAGE=AUTO,                                                 X
+                 LANG=COBOL,                                                   X
+                 CTRL=FREEKB                                              
+ ADD01   DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+                 DFHMDF INITIAL='ADD    PGM',POS=(1,38),LENGTH=10,ATTRB=PROT     
+                 DFHMDF INITIAL='ENTER NO1:',POS=(05,11),LENGTH=10,ATTRB=PROT    
+ NO1        DFHMDF POS=(05,22),LENGTH=3,ATTRB=(UNPROT,IC),PICIN='999',         X
+                INITIAL='___'                                            
+                DFHMDF POS=(05,26),LENGTH=1,ATTRB=ASKIP                         
+                DFHMDF INITIAL='ENTER NO2:',POS=(06,11),LENGTH=10,ATTRB=ASKIP   
+ NO2       DFHMDF POS=(06,22),LENGTH=03,ATTRB=UNPROT,PICIN='999',              X
+                INITIAL='___'                                            
+                DFHMDF INITIAL='RESULT  :',POS=(08,11),                        X
+                LENGTH=09,ATTRB=PROT                                     
+ RES       DFHMDF POS=(08,22),ATTRB=UNPROT,                                    X
+                LENGTH=04,PICOUT='9999',                                       X
+                INITIAL='____' 
+ 
+  
+      
+
+
+
+

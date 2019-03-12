@@ -1,0 +1,81 @@
+./ ADD NAME=TSTJOB1R
+//TSTJOB1R JOB  (01427,,,99),'SAVE TSTJOB1R',CLASS=D,MSGCLASS=X,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//**********************************************************************
+//* SAUVEGARDE DES INPUTS
+//**********************************************************************
+//LIBINC   JCLLIB ORDER=(MSOL.INIT.INCL)
+//SETVAR   INCLUDE MEMBER=MSOLVAR
+//**********************************************************************
+//* STEPS DELETE INITIAUX
+//**********************************************************************
+//DELETE EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(TRK,0),
+//            DSN=MSOL.TEST.FIC01R
+//*---------------------------------------------------------------------
+//REPRO    EXEC PGM=IDCAMS
+//SYSPRINT DD  SYSOUT=*
+//SYSOUT   DD  SYSOUT=*
+//SYSUDUMP DD  SYSOUT=*
+//FILIN    DD  DUMMY
+//FILOU    DD  DSN=MSOL.TEST.FIC01R,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=???),
+//             SPACE=(TRK,(50,500),RLSE)
+ REPRO IFILE(FILIN) OFILE(FILOU)
+/*
+./ ADD NAME=TSTJOB2R
+//TSTJOB2R JOB  (01427,,,99),'SAVE TSTJOB2R',CLASS=D,MSGCLASS=X,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//**********************************************************************
+//* SAUVEGARDE DES INPUTS
+//**********************************************************************
+//LIBINC   JCLLIB ORDER=(MSOL.INIT.INCL)
+//SETVAR   INCLUDE MEMBER=MSOLVAR
+//**********************************************************************
+//* STEPS DELETE INITIAUX
+//**********************************************************************
+//DELETE EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(TRK,0),
+//            DSN=MSOL.TEST.FIC01R
+//*---------------------------------------------------------------------
+//REPRO    EXEC PGM=IDCAMS
+//SYSPRINT DD  SYSOUT=*
+//SYSOUT   DD  SYSOUT=*
+//SYSUDUMP DD  SYSOUT=*
+//FILIN    DD  DUMMY
+//FILOU    DD  DSN=MSOL.TEST.FIC01R,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=???),
+//             SPACE=(TRK,(50,500),RLSE)
+ REPRO IFILE(FILIN) OFILE(FILOU)
+/*
+./ ADD NAME=TSTJOB3R
+//TSTJOB3R JOB  (01427,,,99),'SAVE TSTJOB3R',CLASS=D,MSGCLASS=X,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//**********************************************************************
+//* SAUVEGARDE DES INPUTS
+//**********************************************************************
+//LIBINC   JCLLIB ORDER=(MSOL.INIT.INCL)
+//SETVAR   INCLUDE MEMBER=MSOLVAR
+//**********************************************************************
+//* STEPS DELETE INITIAUX
+//**********************************************************************
+//DELETE EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(TRK,0),
+//            DSN=MSOL.TEST.FIC01R
+//*---------------------------------------------------------------------
+//REPRO    EXEC PGM=IDCAMS
+//SYSPRINT DD  SYSOUT=*
+//SYSOUT   DD  SYSOUT=*
+//SYSUDUMP DD  SYSOUT=*
+//FILIN    DD  DUMMY
+//FILOU    DD  DSN=MSOL.TEST.FIC01R,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=???),
+//             SPACE=(TRK,(50,500),RLSE)
+ REPRO IFILE(FILIN) OFILE(FILOU)
+/*

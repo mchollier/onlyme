@@ -1,0 +1,1764 @@
+CNTL ./ ADD NAME=INCOMPGM
+CNTL //IBMUSER1 JOB SYST,'INCOME COBOL TRACE',REGION=0M,
+CNTL //             CLASS=D,
+CNTL //             MSGCLASS=X,
+CNTL //             NOTIFY=&SYSUID
+CNTL //*---------------------------------------------------------------------
+CNTL //*  INTEGRATION DES MEMBRES APPLICATIFS MODIFIES                   ----
+CNTL //*---------------------------------------------------------------------
+CNTL //IEBUPDTE EXEC PGM=IEBUPDTE,PARM=NEW,COND=(4,LT)
+CNTL //SYSPRINT DD DUMMY
+CNTL //SYSIN    DD DSN=MSOL.COM.SOURCE.COBOL,DISP=SHR
+CNTL //SYSUT2   DD DSN=MSOL.COM.COBOL,DISP=SHR
+CNTL ./ ADD NAME=TSTTRAC
+CNTL //IBMUSER2 JOB SYST,'TEST TRACE MVS',REGION=8M,
+CNTL //     CLASS=D,MSGCLASS=X,NOTIFY=&SYSUID
+CNTL //*
+CNTL //JOBLIB   DD DISP=SHR,DSN=MSOL.COM.LOAD
+CNTL //*
+CNTL //*---------------------------------------------------------------------
+CNTL //DELETE   EXEC PGM=IDCAMS
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL   DELETE 'MSOL.COM.TRACE.SYSOUT'
+CNTL   SET MAXCC = 0
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //ALLOC    EXEC PGM=IEFBR14,COND=(4,LT)
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //CREATE   DD DSN=MSOL.COM.TRACE.SYSOUT,DISP=(NEW,CATLG),
+CNTL //            DCB=(LRECL=330,BLKSIZE=0,RECFM=FB,DSORG=PS),
+CNTL //            SPACE=(CYL,(5,5),RLSE)
+CNTL //*---------------------------------------------------------------------
+CNTL //DELDEF   EXEC PGM=IDCAMS
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSOUT   DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL  DELETE (MSOL.COM.TRACE) CLUSTER PURGE SCRATCH ERASE
+CNTL  SET MAXCC=0
+CNTL  DEFINE CLUSTER (                      -
+CNTL    NAME    (MSOL.COM.TRACE)            -
+CNTL    CISZ    (8192)                      -
+CNTL    KEYS    (43 0)                      -
+CNTL    RECSZ   (330 330)                   -
+CNTL    VOL     (MSOL01)                    -
+CNTL    RECORD  (15000 5000)                -
+CNTL    INDEXED                             -
+CNTL    UNIQUE                              -
+CNTL    SPEED                               -
+CNTL    SHR     (2 3)                       -
+CNTL    )                                   -
+CNTL    DATA    (NAME (MSOL.COM.TRACE.DATA))      -
+CNTL    INDEX   (NAME (MSOL.COM.TRACE.INDX))
+CNTL /*
+CNTL //*
+CNTL //*---------------------------------------------------------------------
+CNTL //TRACE1    EXEC PGM=TSTMVS
+CNTL //SYSOUT     DD SYSOUT=*
+CNTL //SYSPRINT   DD SYSOUT=*
+CNTL //ELAPRINT   DD SYSOUT=*
+CNTL //FICHIER    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //TRACE2    EXEC PGM=TSTMVS
+CNTL //SYSOUT     DD SYSOUT=*
+CNTL //SYSPRINT     DD SYSOUT=*
+CNTL //EZEPRINT    DD *
+CNTL //ELAPRINT DD SYSOUT=*
+CNTL //MSTRACE    DD DSN=MSOL.COM.TRACE,DISP=SHR
+CNTL //FICHIER    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //REPRO    EXEC PGM=IDCAMS
+CNTL //FICIN    DD DSN=MSOL.COM.TRACE,DISP=SHR
+CNTL //FICOUT   DD DSN=MSOL.COM.TRACE.SYSOUT,DISP=SHR
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSOUT   DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL  REPRO  -
+CNTL         IFILE (FICIN) -
+CNTL         OFILE (FICOUT)
+CNTL /*
+CNTL ./ ADD NAME=CCOB
+CNTL //CCOB     JOB MOVE,'COMPIL COB CICS,SQL',
+CNTL // CLASS=A,MSGCLASS=H,MSGLEVEL=1,NOTIFY=&SYSUID
+CNTL //*--------------------------------------------------< COMPILATION >---
+CNTL //COB2     PROC MBR=,
+CNTL //         SRCELIB=MSOL.COM.COBOL,
+CNTL //         LOADLIB=MSOL.COM.LOAD
+CNTL //C        EXEC PGM=IGYCRCTL,REGION=0M,
+CNTL //*  PARM=(NOSEQUENCE,APOST,RENT,LIB,NUM,TEST,
+CNTL //   PARM=(NOSEQUENCE,APOST,RENT,LIB,NUM,
+CNTL //   'ARITH(EXTEND),PGMNAME(LONGUPPER)')
+CNTL //STEPLIB  DD DISP=SHR,DSN=DFH320.CICS.SDFHLOAD
+CNTL //         DD DISP=SHR,DSN=IGY410.SIGYCOMP
+CNTL //SYSIN    DD DISP=SHR,DSN=&SRCELIB(&MBR)
+CNTL //SYSUT1   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT2   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT3   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT4   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT5   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT6   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT7   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT8   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT9   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSLIB   DD DISP=SHR,DSN=MSOL.COM.COPY
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSOUT   DD SYSOUT=*
+CNTL //SYSLIN   DD DSNAME=&&LOADSET,UNIT=SYSDA,DISP=(,PASS),
+CNTL //         SPACE=(TRK,(0,50),RLSE)
+CNTL //*--------------------------------------------------< LINK EDIT   >---
+CNTL //L        EXEC PGM=IEWL,
+CNTL //         PARM='LIST,XREF,LET,MAP,AMODE(31),RMODE(ANY)',
+CNTL //         COND=(8,LT,C)
+CNTL //SYSLIB   DD DISP=SHR,DSN=MSOL.COM.LOAD
+CNTL //         DD DISP=SHR,DSN=CEE.SCEELKED
+CNTL //         DD DISP=SHR,DSN=DSN910.SDSNLOAD
+CNTL //*        DD DISP=SHR,DSN=IMSVS.RESLIB
+CNTL //         DD DISP=SHR,DSN=DFH320.CICS.SDFHLOAD
+CNTL //         DD DISP=SHR,DSN=ISP.SISPLOAD
+CNTL //         DD DISP=SHR,DSN=GDDM.SADMMOD
+CNTL //SYSLIN   DD DSN=&&LOADSET,DISP=(OLD,DELETE)
+CNTL //         DD DDNAME=SYSIN
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSUDUMP DD SYSOUT=D,HOLD=YES
+CNTL //SYSUT1   DD SPACE=(1024,(50,50)),UNIT=SYSDA
+CNTL //SYSLMOD  DD DISP=SHR,DSN=&LOADLIB(&MBR)
+CNTL // PEND
+CNTL //*---------------------------------------------------------------------
+CNTL //*MSLOGO  EXEC COB2,MBR=MSSLOGO
+CNTL //*MSSOPT   EXEC COB2,MBR=MSSOPT
+CNTL //*MSSCOPY  EXEC COB2,MBR=MSSCOPY
+CNTL //*MSSHEXA  EXEC COB2,MBR=MSSHEXA
+CNTL //*MSSFORM  EXEC COB2,MBR=MSSFORM
+CNTL //MSPCC    EXEC COB2,MBR=TSTTRI1
+CNTL //MSPCC    EXEC COB2,MBR=TSTTRI2
+CNTL //MSPCC    EXEC COB2,MBR=TSTTRI3
+CNTL ./ ADD NAME=TSTSORT
+CNTL //IBMUSER2 JOB SYST,'TEST SORT',REGION=8M,
+CNTL //     CLASS=D,MSGCLASS=X,NOTIFY=&SYSUID
+CNTL //*
+CNTL //JOBLIB   DD DISP=SHR,DSN=MSOL.COM.LOAD
+CNTL //*
+CNTL //*---------------------------------------------------------------------
+CNTL //DELETE   EXEC PGM=IDCAMS
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL   DELETE 'MSOL.COM.FICHIER.TRI1'
+CNTL   DELETE 'MSOL.COM.FICHIER.TRI2'
+CNTL   DELETE 'MSOL.COM.FICHIER.TRI3'
+CNTL   SET MAXCC = 0
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //TSTTRI1   EXEC PGM=TSTTRI1
+CNTL //SYSOUT    DD SYSOUT=*
+CNTL //SYSPRINT  DD SYSOUT=*
+CNTL //ELAPRINT  DD SYSOUT=*
+CNTL //ENTREE    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //SORTIE    DD DSN=MSOL.COM.FICHIER.TRI1,DISP=(NEW,CATLG),
+CNTL //             DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS),
+CNTL //             SPACE=(CYL,(5,5),RLSE)
+CNTL //WORK      DD DSN=&&WRK
+CNTL //*---------------------------------------------------------------------
+CNTL //TSTTRI2   EXEC PGM=TSTTRI2
+CNTL //SYSOUT    DD SYSOUT=*
+CNTL //SYSPRINT  DD SYSOUT=*
+CNTL //ELAPRINT  DD SYSOUT=*
+CNTL //ENTREE    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //SORTIE    DD DSN=MSOL.COM.FICHIER.TRI2,DISP=(NEW,CATLG),
+CNTL //             DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS),
+CNTL //             SPACE=(CYL,(5,5),RLSE)
+CNTL //WORK      DD DSN=&&WRK
+CNTL //*---------------------------------------------------------------------
+CNTL //TSTTRI3   EXEC PGM=TSTTRI3
+CNTL //SYSOUT    DD SYSOUT=*
+CNTL //SYSPRINT  DD SYSOUT=*
+CNTL //ELAPRINT  DD SYSOUT=*
+CNTL //ENTRE1    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //ENTRE2    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //ENTRE3    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //ENTRE4    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //ENTRE5    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //ENTRE6    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //ENTRE7    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //ENTRE8    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //ENTRE9    DD DSN=MSOL.COM.FICHIER,DISP=SHR
+CNTL //SORTIE    DD DSN=MSOL.COM.FICHIER.TRI3,DISP=(NEW,CATLG),
+CNTL //             DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS),
+CNTL //             SPACE=(CYL,(5,5),RLSE)
+CNTL //WORK      DD DSN=&&WRK
+CNTL ./ ADD NAME=TSTCICS
+CNTL //IBMUSER2 JOB SYST,'TEST TRACE MVS',REGION=8M,
+CNTL //     CLASS=D,MSGCLASS=X,NOTIFY=&SYSUID
+CNTL //*
+CNTL //JOBLIB   DD DISP=SHR,DSN=MSOL.COM.LOAD
+CNTL //*
+CNTL //*---------------------------------------------------------------------
+CNTL //TRACE1    EXEC PGM=TESTCICS
+CNTL //SYSOUT     DD SYSOUT=*
+CNTL //SYSPRINT   DD SYSOUT=*
+CNTL //ELAPRINT   DD SYSOUT=*
+CNTL /*
+CNTL ./ ADD NAME=$$$SAVE
+CNTL //$$$$SAVE JOB SYST,'SAVE TRACE',REGION=0M,
+CNTL //     CLASS=D,MSGCLASS=X,NOTIFY=&SYSUID
+CNTL //*---------------------------------------------------------------------
+CNTL //* SAUVEGARDE MSOL.COM.CNTL
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP01   EXEC PGM=IEBPTPCH
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSUT1   DD DSN=MSOL.COM.CNTL,DISP=SHR
+CNTL //SYSUT2   DD DSN=&&CNTL,DISP=(NEW,PASS),
+CNTL //         DCB=(LRECL=081,BLKSIZE=0,RECFM=FBA,DSORG=PS)
+CNTL //SYSIN    DD *
+CNTL  PUNCH TYPORG=PO
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP02   EXEC PGM=SORT
+CNTL //SORTIN   DD DSN=&&CNTL,DISP=(OLD,PASS)
+CNTL //SORTOUT  DD DSN=&&CNTL2,DISP=(NEW,PASS),
+CNTL //         DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS)
+CNTL //SYSOUT   DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL   SORT FIELDS=COPY
+CNTL   OUTREC FIELDS=(C'CNTL ',2,75)
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP03   EXEC PGM=IDCAMS
+CNTL //DATAINP  DD DSN=&&CNTL2,DISP=(OLD,PASS)
+CNTL //DATAOUT  DD DSN=&&SAVE,DISP=(MOD,PASS),
+CNTL //         DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS)
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL    REPRO  INFILE(DATAINP) OUTFILE(DATAOUT)
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //* SAUVEGARDE MSOL.COM.COBOL
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP04   EXEC PGM=IEBPTPCH
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSUT1   DD DSN=MSOL.COM.COBOL,DISP=SHR
+CNTL //SYSUT2   DD DSN=&&COBOL,DISP=(NEW,PASS),
+CNTL //         DCB=(LRECL=081,BLKSIZE=0,RECFM=FBA,DSORG=PS)
+CNTL //SYSIN    DD *
+CNTL  PUNCH TYPORG=PO
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP05   EXEC PGM=SORT
+CNTL //SORTIN   DD DSN=&&COBOL,DISP=(OLD,PASS)
+CNTL //SORTOUT  DD DSN=&&COBOL2,DISP=(NEW,PASS),
+CNTL //         DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS)
+CNTL //SYSOUT   DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL   SORT FIELDS=COPY
+CNTL   OUTREC FIELDS=(C'COBOL ',2,75)
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP06   EXEC PGM=IDCAMS
+CNTL //DATAINP  DD DSN=&&COBOL2,DISP=(OLD,PASS)
+CNTL //DATAOUT  DD DSN=&&SAVE,DISP=(MOD,PASS),
+CNTL //         DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS)
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL    REPRO  INFILE(DATAINP) OUTFILE(DATAOUT)
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //* SAUVEGARDE MSOL.COM.COPY
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP07   EXEC PGM=IEBPTPCH
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSUT1   DD DSN=MSOL.COM.COPY,DISP=SHR
+CNTL //SYSUT2   DD DSN=&&COPY,DISP=(NEW,PASS),
+CNTL //         DCB=(LRECL=081,BLKSIZE=0,RECFM=FBA,DSORG=PS)
+CNTL //SYSIN    DD *
+CNTL  PUNCH TYPORG=PO
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP08   EXEC PGM=SORT
+CNTL //SORTIN   DD DSN=&&COPY,DISP=(OLD,PASS)
+CNTL //SORTOUT  DD DSN=&&COPY2,DISP=(NEW,PASS),
+CNTL //         DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS)
+CNTL //SYSOUT   DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL   SORT FIELDS=COPY
+CNTL   OUTREC FIELDS=(C'COPY ',2,75)
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP09   EXEC PGM=IDCAMS
+CNTL //DATAINP  DD DSN=&&COPY2,DISP=(OLD,PASS)
+CNTL //DATAOUT  DD DSN=&&SAVE,DISP=(MOD,PASS),
+CNTL //         DCB=(LRECL=080,BLKSIZE=0,RECFM=FB,DSORG=PS)
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL    REPRO  INFILE(DATAINP) OUTFILE(DATAOUT)
+CNTL /*
+CNTL //*---------------------------------------------------------------------
+CNTL //* SAUVEGARDE MSOL.COM.TOTAL
+CNTL //*---------------------------------------------------------------------
+CNTL //STEP10   EXEC PGM=IDCAMS
+CNTL //DATAINP  DD DSN=&&CNTL2,DISP=(OLD,PASS)
+CNTL //         DD DSN=&&COPY2,DISP=(OLD,PASS)
+CNTL //         DD DSN=&&COBOL2,DISP=(OLD,PASS)
+CNTL //DATAOUT  DD DSN=MSOL.COM.INTALL,DISP=SHR
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSIN    DD *
+CNTL    REPRO  INFILE(DATAINP) OUTFILE(DATAOUT)
+CNTL /*
+CNTL ./ ADD NAME=COBCICS
+CNTL //COBCICS JOB MOVE,'COMPILATION CICS',NOTIFY=&SYSUID
+CNTL //*---------------------------------------------------------------------
+CNTL //COB2     PROC MBR=
+CNTL //TRN      EXEC PGM=DFHECP1$,
+CNTL //         PARM=(SP)
+CNTL //STEPLIB  DD DISP=SHR,DSN=DFH320.CICS.SDFHLOAD
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSIN    DD DISP=SHR,DSN=MSOL.COM.COBOL(&MBR)
+CNTL //SYSPUNCH DD DSN=&&SYSCIN,
+CNTL //            DISP=(,PASS),UNIT=SYSDA,
+CNTL //            DCB=BLKSIZE=400,
+CNTL //            SPACE=(400,(400,100))
+CNTL //*
+CNTL //COB2     EXEC PGM=IGYCRCTL,COND=(4,LT),REGION=2M,
+CNTL //         PARM=(TRUNC(BIN),APOST,MAP,
+CNTL //         FLAG(I,E),LIB,NUMPROC(PFD),NODBCS,
+CNTL //         LIST,OPT(STD))
+CNTL //STEPLIB  DD DISP=SHR,DSN=IGY410.SIGYCOMP
+CNTL //         DD DISP=SHR,DSN=DFH320.CICS.SDFHLOAD
+CNTL //SYSIN DD DSN=&&SYSCIN,DISP=(OLD,DELETE)
+CNTL //SYSLIB   DD DISP=(SHR),DSN=DFH320.CICS.SDFHCOB
+CNTL //         DD DISP=(SHR),DSN=DFH320.CICS.SDFHMAC
+CNTL //         DD DISP=(SHR),DSN=DFH320.CICS.SDFHSAMP
+CNTL //         DD DISP=(SHR),DSN=MSOL.PDS.COPY
+CNTL //SYSUT1   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT2   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT3   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT4   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT5   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT6   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSUT7   DD UNIT=SYSDA,SPACE=(CYL,(1,1),,CONTIG)
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSOUT   DD SYSOUT=*
+CNTL //SYSLIN   DD DSNAME=&&LOADSET,UNIT=SYSDA,DISP=(,PASS),
+CNTL //         SPACE=(TRK,(0,50),RLSE)
+CNTL //*---------------------------------------------------------------------
+CNTL //LKED     EXEC PGM=IEWL,
+CNTL //           PARM=(XREF,LIST,LET,RENT)
+CNTL //SYSLIB   DD DISP=SHR,DSN=CEE.SCEELKED
+CNTL //         DD DISP=SHR,DSN=DFH320.CICS.SDFHLOAD
+CNTL //         DD DISP=SHR,DSN=MSOL.PDS.LOAD
+CNTL //SYSLIN   DD DSN=&&LOADSET,DISP=(OLD,DELETE)
+CNTL //         DD DISP=SHR,DSN=DFH320.CICS.SDFHSAMP(DFHEILID)
+CNTL //SYSPRINT DD SYSOUT=*
+CNTL //SYSUDUMP DD SYSOUT=D,HOLD=YES
+CNTL //SYSUT1   DD SPACE=(1024,(50,50)),UNIT=SYSDA
+CNTL //SYSLMOD  DD DISP=SHR,DSN=MSOL.PDS.LOAD(&MBR)
+CNTL //         PEND
+CNTL //*---------------------------------------------------------------------
+CNTL //PXCTL   EXEC COB2,MBR=PXCTL
+CNTL //PLINK   EXEC COB2,MBR=PLINK
+COPY ./ ADD NAME=GETMICRO
+COPY       *01  MICRO-SECONDS           COMP PIC S9(18).
+COPY       *01  MICRO-SECONDS-Z              PIC ---B---B---B---B---B--9.
+COPY
+COPY UNIX  * SPECIFIQUE UNIX
+COPY UNIX  *01  TIMEVAL-32BIT.
+COPY UNIX  *     05 SECONDS      PIC X(4) COMP-5.
+COPY UNIX  *     05 MICROSECONDS PIC X(4) COMP-5.
+COPY UNIX  *77 TZP USAGE POINTER VALUE NULL.
+COPY
+COPY MVS   * SPECIFIQUE MVS - RECUP COMPTAGE EN MICRO SECONDE
+COPY MVS   *01  CPU-TIME-DEF-WORKING-STORAGE.
+COPY MVS   *    03 GETMS-PTR-1          COMP PIC S9(08).
+COPY MVS   *    03 GETMS-PTR-1P REDEFINES GETMS-PTR-1 POINTER.
+COPY MVS   *    03 GETMS-PTR-2          COMP PIC S9(08).
+COPY MVS   *    03 GETMS-PTR-2P REDEFINES GETMS-PTR-2 POINTER.
+COPY MVS   *    03 GETMS-PTR-2X REDEFINES GETMS-PTR-2 PIC X(04).
+COPY MVS   *    03 GETMS-PTR-3          COMP PIC S9(18) VALUE ZERO.
+COPY MVS   *    03 GETMS-PTR-3X REDEFINES GETMS-PTR-3 PIC X(08).
+COPY
+COPY       ******************************************************************
+COPY       * MICRO-SECONDS PIC S9(18) COMPTEUR EN MICRO SECONDE
+COPY       * 2 APPELS SUCCESSIFS PERMET DE RECUPERER UNE DUREE
+COPY       *----------------------------------------------------------------*
+COPY        GET-MICRO-SECONDS.
+COPY       *-----------------*
+COPY PC    *    DLL GETTICKCOUNT ECRITE EN DELPHI ET A METTRE
+COPY PC    *    DANS LE REPERTOIRE DU PGM COBOL EXECUTE
+COPY PC         CALL "GETTICKCOUNT.DLL" USING MICRO-SECONDS.
+COPY
+COPY UNIX       CALL "GETTIMEOFDAY" USING
+COPY UNIX          BY REFERENCE TIMEVAL-32BIT
+COPY UNIX          BY VALUE     TZP
+COPY UNIX       END-CALL.
+COPY UNIX       COMPUTE MICRO-SECONDS = SECONDS * 1000000 + MICROSECONDS.
+COPY
+COPY MVS        SET ADDRESS OF X-GETMS-PTR TO NULL
+COPY MVS        SET ADDRESS OF X-GETMS-PTR TO GETMS-PTR(136)
+COPY MVS        SET GETMS-PTR-1P           TO GETMS-PTR(080)
+COPY MVS        SET GETMS-PTR-2P           TO GETMS-PTR(081)
+COPY MVS        MOVE GETMS-PTR-2X          TO GETMS-PTR-3X(5:)
+COPY MVS        COMPUTE MICRO-SECONDS = GETMS-PTR-1 * 1048576
+COPY MVS                              + GETMS-PTR-3 / 4096.
+COPY ./ ADD NAME=USWPACTR
+COPY       * USPPACTR : COPY D'APPEL AU MODULE DE TRACE
+COPY        01  MS-PARAM-TRACE.
+COPY       * NOM DU PROGRAMME COURANT
+COPY            02 MS-PGM                   PIC  X(08).
+COPY            02 MS-KEY-TRACE.
+COPY       * NUMERO DU PATH, NE RIEN METTRE GESTION INTERNE
+COPY              05 MS-NOP          COMP   PIC  9(04).
+COPY       * PARAMETRE D'APPEL DE LA POSE D'UNE TRACE
+COPY              05 MS-PAR                 PIC  X(20).
+COPY              05 FILLER REDEFINES MS-PAR.
+COPY       * CD APPEL
+COPY       * - I: INIT A L'ENTREE DU PROGRAMME (DERRIERE PROC DIV)
+COPY       * - P: POSE D'UN COMPTAGE
+COPY       * - B: CALCUL DUREE TOP DEBUT
+COPY       * - E: CALCUL DUREE TOP FIN
+COPY       * - X: FERMETURE DU PROGRAMME (AVANT LE GOBACK)
+COPY       *      SI LE PGM COURANT=1ER PGM ALORS DUMP DES COMPTEURS
+COPY       * - Z: FORCAGE DU DUMP DES COMPTEURS
+COPY                 10 MS-FON              PIC  X(01).
+COPY       * REFERENCE DE LA TRACE
+COPY                 10 MS-REF              PIC  X(19).
+COPY ./ ADD NAME=IEU9002A
+COPY        01  IEU900-AREA.
+COPY            10  IEU900-FUNZ             PIC X(001).
+COPY            10  IEU900-RC               PIC X(001).
+COPY            10  IEU900-IMP              PIC S9(17)       COMP-3 VALUE
+COPY                ZERO.
+COPY            10  IEU900-IMPD REDEFINES IEU900-IMP
+COPY                                        PIC S9(15)V9(02) COMP-3.
+COPY            10  IEU900-FR               PIC X(001).
+COPY            10  FILLER                  PIC X(009).
+COPY            10  IEU900-TASS             PIC S9(05)V9(02) COMP-3 VALUE
+COPY                ZERO.
+COPY            10  IEU900-DIVI             PIC X(003).
+COPY            10  IEU900-DIVO             PIC X(003).
+COPY            10  IEU900-F3FR             PIC S9(03)       COMP-3.
+COPY            10  IEU900-IMP6X.
+COPY                20 IEU900-IMP6I         PIC 9(018).
+COPY                20 IEU900-IMP6D         PIC 9(006).
+COPY            10  IEU900-X3TX1            PIC S9(05)V9(06) COMP-3.
+COPY            10  IEU900-X3TX2            PIC S9(05)V9(06) COMP-3.
+COPY            10  FILLER                  PIC X(031).
+COPY ./ ADD NAME=UCWPACTR
+COPY       * USPPACTR : COPY D'APPEL AU MODULE DE TRACE
+COPY        01  MS-PARAM-TRACE.
+COPY       * NOM DU PROGRAMME COURANT
+COPY            02 MS-PGM                   PIC  X(08).
+COPY            02 MS-KEY-TRACE.
+COPY       * NUMERO DU PATH, NE RIEN METTRE GESTION INTERNE
+COPY              05 MS-NOP          COMP   PIC  9(04).
+COPY       * PARAMETRE D'APPEL DE LA POSE D'UNE TRACE
+COPY              05 MS-PAR                 PIC  X(20).
+COPY              05 FILLER REDEFINES MS-PAR.
+COPY       * CD APPEL
+COPY       * - I: INIT A L'ENTREE DU PROGRAMME (DERRIERE PROC DIV)
+COPY       * - P: POSE D'UN COMPTAGE
+COPY       * - B: CALCUL DUREE TOP DEBUT
+COPY       * - E: CALCUL DUREE TOP FIN
+COPY       * - X: FERMETURE DU PROGRAMME (AVANT LE GOBACK)
+COPY       *      SI LE PGM COURANT=1ER PGM ALORS DUMP DES COMPTEURS
+COPY       * - Z: FORCAGE DU DUMP DES COMPTEURS
+COPY                 10 MS-FON              PIC  X(01).
+COPY       * REFERENCE DE LA TRACE
+COPY                 10 MS-REF              PIC  X(19).
+COBOL ./ ADD NAME=USPTIOT
+COBOL        IDENTIFICATION DIVISION.
+COBOL        PROGRAM-ID. USPTIOT.
+COBOL       *****************************************************************
+COBOL       * ADRESSAGE DE LA TIOT MVS POUR LES INFORMATIONS :              *
+COBOL       * JOBNAME, STEPNAME ET PROCNAME                                 *
+COBOL       *****************************************************************
+COBOL        DATA DIVISION.
+COBOL        WORKING-STORAGE SECTION.
+COBOL
+COBOL        01 WSS.
+COBOL           05 WSS-PTR  POINTER.
+COBOL           05 WSS-BIN  REDEFINES WSS-PTR PIC S9(08) BINARY.
+COBOL
+COBOL       *****************************************************************
+COBOL        LINKAGE SECTION.
+COBOL
+COBOL        01 LS-DATA                  PIC X(1000).
+COBOL        01 FILLER      REDEFINES LS-DATA.
+COBOL           05 LS-ADRESSE            PIC S9(08)  BINARY.
+COBOL           05 LS-PTR   REDEFINES LS-ADRESSE POINTER.
+COBOL           05                       PIC X(08).
+COBOL           05 LS-TIOT  POINTER.
+COBOL        01 NOM-JOBSTEP REDEFINES LS-DATA.
+COBOL           10 JOBNAME               PIC X(08).
+COBOL           10 STEPNAME              PIC X(08).
+COBOL           10 PROCNAME              PIC X(08).
+COBOL           10 FILLER                PIC X(04).
+COBOL           10 TIOT-DD OCCURS 40     PIC X(20).
+COBOL
+COBOL        01 PARM-TIOT                PIC X(24).
+COBOL
+COBOL       *****************************************************************
+COBOL        PROCEDURE DIVISION USING PARM-TIOT.
+COBOL
+COBOL       * ADRESSE TCB EN +540  : MACRO ASM IKJTCB LIST=YES
+COBOL            MOVE 540                TO WSS-BIN
+COBOL            SET ADDRESS OF LS-DATA  TO WSS-PTR
+COBOL            SET ADDRESS OF LS-DATA  TO LS-PTR
+COBOL       * ADRESSAGE DE LA TIOT QUI COMMENCE PAR LE NOM DU JOB/STEP
+COBOL            SET ADDRESS OF LS-DATA  TO LS-TIOT
+COBOL
+COBOL       * RESTITUTION
+COBOL       *    DISPLAY '* -USPTIOT------------<'
+COBOL       *    DISPLAY '* JOB : ' JOBNAME '<'
+COBOL       *    DISPLAY '* STEP: ' STEPNAME '<'
+COBOL       *    DISPLAY '* PROC: ' PROCNAME '<'
+COBOL       *    DISPLAY '* DD  : ' TIOT-DD(1) '<'
+COBOL       *    DISPLAY '* DD  : ' TIOT-DD(2) '<'
+COBOL       *    DISPLAY '* DD  : ' TIOT-DD(3) '<'
+COBOL       *    DISPLAY '* DD  : ' TIOT-DD(4) '<'
+COBOL       *    DISPLAY '* DD  : ' TIOT-DD(5) '<'
+COBOL       *    DISPLAY '* DD  : ' TIOT-DD(6) '<'
+COBOL       *    DISPLAY '* DD  : ' TIOT-DD(7) '<'
+COBOL            MOVE NOM-JOBSTEP(1:24)  TO PARM-TIOT
+COBOL            GOBACK.
+COBOL
+COBOL ./ ADD NAME=USPPACTR
+COBOL        IDENTIFICATION DIVISION.
+COBOL       ******************************************************************
+COBOL       * GESTIONNAIRE DE TRACES                                         *
+COBOL       * - TOUS LES PROGRAMMES ET SOUS-PROGRAMMES DOIVENT ETRE TRACES   *
+COBOL       * - COPY D'APPEL UCWPACTR                                        *
+COBOL       * - FICHIER DE RESULTAT OPTIONNEL MSTRACE (SINON DISPLAY SYSOUT) *
+COBOL       *----------------------------------------------------------------*
+COBOL       *  CALL K-TRACE  USING MS-PARAM-TRACE                            *
+COBOL       *  - MS-FON = I  INITIALISATION JUSTE APRES PROC DIV             *
+COBOL       *  - MS-FON = P  COMPTAGE                                        *
+COBOL       *  - MS-FON = B  CALCUL DUREE TOP DEBUT                          *
+COBOL       *  - MS-FON = E  CALCUL DUREE TOP FIN                            *
+COBOL       *  - MS-FON = X  FIN JUSTE AVANT LE GOBACK                       *
+COBOL       *                ON EDITE SI LA PILE PGM DEVIENT VIDE            *
+COBOL       *  - MS-FON = Z  FORCAGE DE L'EDITION DES COMPTEURS              *
+COBOL       ******************************************************************
+COBOL        PROGRAM-ID.   USPPACTR.
+COBOL
+COBOL       ******************************************************************
+COBOL        ENVIRONMENT DIVISION.
+COBOL
+COBOL        CONFIGURATION SECTION.
+COBOL        SOURCE-COMPUTER. IBM-MVS.
+COBOL        OBJECT-COMPUTER. IBM-MVS.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL        INPUT-OUTPUT SECTION.
+COBOL       *--------------------*
+COBOL        FILE-CONTROL.
+COBOL       *------------*
+COBOL            SELECT OPTIONAL FIC-TRACE ASSIGN TO MSTRACE
+COBOL               ORGANIZATION  INDEXED
+COBOL               ACCESS MODE   DYNAMIC
+COBOL               RECORD KEY    FD-ART-TRACE-CLE
+COBOL               FILE STATUS   FS-TRACE.
+COBOL
+COBOL       ******************************************************************
+COBOL        DATA DIVISION.
+COBOL       *----------------------------------------------------------------*
+COBOL        FILE SECTION.
+COBOL       *------------*
+COBOL        FD  FIC-TRACE.
+COBOL        01  FD-ART-TRACE.
+COBOL            05 FD-ART-TRACE-CLE          PIC X(043).
+COBOL            05 FD-ART-TRACE-DATA         PIC X(287).
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL        WORKING-STORAGE SECTION.
+COBOL       *-----------------------*
+COBOL       * CONSTANTES
+COBOL        01  K-TIOT                       PIC  X(08) VALUE "USPTIOT".
+COBOL
+COBOL        01  KFON-INIT                    PIC  X(01) VALUE "I".
+COBOL        01  KFON-COUNT                   PIC  X(01) VALUE "P".
+COBOL        01  KFON-PAC                     PIC  X(01) VALUE "F".
+COBOL        01  KFON-BEGIN                   PIC  X(01) VALUE "B".
+COBOL        01  KFON-END                     PIC  X(01) VALUE "E".
+COBOL        01  KFON-EXIT                    PIC  X(01) VALUE "X".
+COBOL        01  KFON-FORCE-EDIT              PIC  X(01) VALUE "Z".
+COBOL
+COBOL        01  K-TRUE                       PIC  X(01) VALUE "T".
+COBOL        01  K-FALSE                      PIC  X(01) VALUE "F".
+COBOL        01  W-TROUVE                     PIC  X(01) VALUE "F".
+COBOL            88  JAI-TROUVE             VALUE "T".
+COBOL        01  W-PREM-FOIS                  PIC  X(01) VALUE "T".
+COBOL            88  PREMIERE-FOIS          VALUE "T".
+COBOL        01  W-COMPTAGE-OUTPUT            PIC  X(01) VALUE "F".
+COBOL            88  OUTPUT-DISPLAY         VALUE "T".
+COBOL            88  OUTPUT-FILE            VALUE "F".
+COBOL
+COBOL       * VARIABLES GENERALES
+COBOL        01  II                      COMP PIC  9(09) VALUE ZERO.
+COBOL        01  JJ                      COMP PIC  9(09) VALUE ZERO.
+COBOL        01  KK                      COMP PIC  9(09) VALUE ZERO.
+COBOL        01  TTT                     COMP PIC  9(09) VALUE ZERO.
+COBOL        01  LL1                     COMP PIC  9(09) VALUE ZERO.
+COBOL        01  LL2                     COMP PIC  9(09) VALUE ZERO.
+COBOL        01  LL3                     COMP PIC  9(09) VALUE ZERO.
+COBOL
+COBOL       * DECOMPOSITION D'UNE TRACE
+COBOL        01  ART-TRACE VALUE SPACE.
+COBOL            05 ART-TRACE-CLE.
+COBOL               10 ART-CLE-AMJ            PIC  X(06).
+COBOL               10 ART-CLE-HMSC           PIC  X(08).
+COBOL               10 ART-CLE-JOBSTEP        PIC  X(24).
+COBOL               10 ART-CLE-IND            PIC  9(05).
+COBOL            05 ART-TRACE-TRACE.
+COBOL               10 ART-TRACE-NBR          PIC  9(09).
+COBOL               10 ART-TRACE-TIME         PIC  9(18).
+COBOL               10 ART-TRACE-LIB          PIC  X(20).
+COBOL               10 ART-TRACE-PATH         PIC X(240).
+COBOL        01  ART-TRACE-EDIT               PIC X(340) VALUE SPACE.
+COBOL        01  FS-TRACE                     PIC  X(02) VALUE SPACES.
+COBOL
+COBOL       * CONSERVATION DU CHEMIN D'APPEL
+COBOL       *  TOUS LES PROGRAMMES DOIVENT ETRE TRACES
+COBOL       *  ON DOIT TOUJOURS PREVOIR UN APPEL A L'ENTREE ET A LA SORTIE
+COBOL       *  DE CHAQUE PROGRAMME TRACE POUR PERMETTRE DE
+COBOL       *  CONSTRUIRE LA PILE D'APPEL
+COBOL        01  PILE-APPEL-PROGRAMME.
+COBOL            05 PATH-MAX             COMP PIC  9(09) VALUE 30.
+COBOL            05 PATH-NB              COMP PIC  9(09) VALUE ZERO.
+COBOL            05 PATH-COURANT VALUE SPACE.
+COBOL              06 PATH-PGM                PIC  X(08) OCCURS 30.
+COBOL
+COBOL        01  LISTE-DES-PATHS.
+COBOL            05 PILE-MAX             COMP PIC  9(09) VALUE 2000.
+COBOL            05 PILE-NB              COMP PIC  9(09) VALUE ZERO.
+COBOL            05 FILLER VALUE SPACE.
+COBOL              06 PILE-PATH               PIC X(240) OCCURS 2000.
+COBOL
+COBOL       *    VARIABLES DE TRAITEMENT DES COMPTEURS
+COBOL       *    CLE = PROGRAMME + TYPE DE COMPTEUR + REFERENCE
+COBOL        01  TABLEAU-COMPTEUR-DYNC.
+COBOL            05 DYNC-MAX             COMP PIC  9(09) VALUE 20000.
+COBOL            05 DYNC-NB              COMP PIC  9(09) VALUE ZERO.
+COBOL            05 DYNC OCCURS 20000
+COBOL               DEPENDING ON  DYNC-NB
+COBOL               ASCENDING KEY DYNC-KEY
+COBOL               INDEXED   BY  IDX-DYNC.
+COBOL               10 DYNC-KEY               PIC  X(22).
+COBOL               10 FILLER REDEFINES DYNC-KEY.
+COBOL                  15 DYNC-NOP       COMP PIC  9(04).
+COBOL                  15 DYNC-LIB.
+COBOL                     20 DYNC-TYP         PIC  X(01).
+COBOL                     20 DYNC-REF         PIC  X(19).
+COBOL               10 DYNC-CPT          COMP PIC  9(18).
+COBOL               10 DYNC-TIME         COMP PIC S9(18).
+COBOL
+COBOL        01  WKEY-TRACE.
+COBOL            05 WKEY-NOP             COMP PIC  9(04).
+COBOL            05 WKEY-LIB.
+COBOL               10 WKEY-TYP               PIC  X(01).
+COBOL               10 WKEY-REF               PIC  X(19).
+COBOL
+COBOL       * SPECIFIQUE MVS - RECUP COMPTAGE EN MICRO SECONDE
+COBOL        01  MICRO-SECONDS           COMP PIC S9(18).
+COBOL        01  MICRO-SECONDS-Z              PIC ---B---B---B---B---B--9.
+COBOL        01 TIMESTAMP PIC S9(18) COMP-5 VALUE ZERO.
+COBOL        01  CPU-TIME-DEF-WORKING-STORAGE.
+COBOL            03 GETMS-PTR-1          COMP PIC S9(08).
+COBOL            03 GETMS-PTR-1P REDEFINES GETMS-PTR-1 POINTER.
+COBOL            03 GETMS-PTR-2          COMP PIC S9(08).
+COBOL            03 GETMS-PTR-2P REDEFINES GETMS-PTR-2 POINTER.
+COBOL            03 GETMS-PTR-2X REDEFINES GETMS-PTR-2 PIC X(04).
+COBOL            03 GETMS-PTR-3          COMP PIC S9(18) VALUE ZERO.
+COBOL            03 GETMS-PTR-3X REDEFINES GETMS-PTR-3 PIC X(08).
+COBOL
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL        LINKAGE SECTION.
+COBOL       *---------------*
+COBOL             COPY UCWPACTR.
+COBOL
+COBOL       * ADRESSAGE DYNAMIQUE POUR RECUP MICRO SECONDES
+COBOL        01  X-GETMS-PTR.
+COBOL            05 GETMS-PTR POINTER OCCURS 256.
+COBOL
+COBOL       ******************************************************************
+COBOL        PROCEDURE DIVISION USING MS-PARAM-TRACE.
+COBOL
+COBOL       * RECUP HORODATAGE ET NOM DU BATCH
+COBOL            IF PREMIERE-FOIS
+COBOL              MOVE SPACE TO ART-CLE-JOBSTEP
+COBOL              CALL K-TIOT USING ART-CLE-JOBSTEP
+COBOL              MOVE SPACE                TO W-PREM-FOIS
+COBOL              ACCEPT ART-CLE-AMJ      FROM DATE
+COBOL              ACCEPT ART-CLE-HMSC     FROM TIME
+COBOL            END-IF
+COBOL
+COBOL       * CLE DE LA TRACE
+COBOL            MOVE MS-KEY-TRACE            TO WKEY-TRACE
+COBOL
+COBOL       * TRAITEMENT PAR TYPE DE TRACE
+COBOL            EVALUATE MS-FON
+COBOL
+COBOL       * PREMIER APPEL LORS DE L'ENTREE DANS UN PROGRAMME
+COBOL               WHEN KFON-INIT
+COBOL                  IF (PATH-NB < PATH-MAX)
+COBOL                     PERFORM EMPILE-NOUVEAU-PGM
+COBOL                     PERFORM FIND-KEY-TRACE
+COBOL                     ADD 1               TO DYNC-CPT(IDX-DYNC)
+COBOL                     PERFORM CALCUL-DUREE
+COBOL                  END-IF
+COBOL
+COBOL       * PASSAGE DANS UNE ETIQUETTE PACBASE
+COBOL               WHEN KFON-PAC
+COBOL                  IF (PATH-NB > ZERO)
+COBOL                  AND (MS-PGM = PATH-PGM(PATH-NB))
+COBOL                     PERFORM FIND-KEY-TRACE
+COBOL                     ADD 1               TO DYNC-CPT(IDX-DYNC)
+COBOL                  END-IF
+COBOL
+COBOL       * COMPTEUR SUR UN POINT DE PASSAGE DANS LE SOURCE
+COBOL               WHEN KFON-COUNT
+COBOL                  IF (PATH-NB > ZERO)
+COBOL                  AND (MS-PGM = PATH-PGM(PATH-NB))
+COBOL                     PERFORM FIND-KEY-TRACE
+COBOL                     ADD 1               TO DYNC-CPT(IDX-DYNC)
+COBOL                  END-IF
+COBOL
+COBOL       * TOP DEBUT D'UN CALCUL DE DUREE
+COBOL               WHEN KFON-BEGIN
+COBOL
+COBOL                  IF (PATH-NB > ZERO)
+COBOL                  AND (MS-PGM = PATH-PGM(PATH-NB))
+COBOL                     PERFORM FIND-KEY-TRACE
+COBOL                     ADD 1               TO DYNC-CPT(IDX-DYNC)
+COBOL                     PERFORM CALCUL-DUREE
+COBOL                  END-IF
+COBOL
+COBOL       * TOP FIN   D'UN CALCUL DE DUREE
+COBOL               WHEN KFON-END
+COBOL                  IF (PATH-NB > ZERO)
+COBOL                  AND (MS-PGM = PATH-PGM(PATH-NB))
+COBOL                     MOVE KFON-BEGIN     TO WKEY-TYP
+COBOL                     PERFORM FIND-KEY-TRACE
+COBOL                     PERFORM CALCUL-DUREE
+COBOL                  END-IF
+COBOL
+COBOL       * POINT DE SORTIE D'UN PROGRAMME (AU GOBACK)
+COBOL               WHEN KFON-EXIT
+COBOL       *       COMPTEUR DE PASSAGE
+COBOL                  IF (PATH-NB > ZERO)
+COBOL                  AND (MS-PGM = PATH-PGM(PATH-NB))
+COBOL                     PERFORM FIND-KEY-TRACE
+COBOL                     ADD 1               TO DYNC-CPT(IDX-DYNC)
+COBOL
+COBOL       *       DUREE DU PROGRAMME SUR LA TRACE D'INIT
+COBOL                     PERFORM FIND-KEY-INIT
+COBOL                     IF JAI-TROUVE
+COBOL                        PERFORM CALCUL-DUREE
+COBOL                     END-IF
+COBOL
+COBOL       *       MISE A JOUR DU PATH SANS LE PROGRAMME COURANT
+COBOL                     PERFORM DEPILE-PGM
+COBOL
+COBOL       *       ON VIENT DE DEPILER LE PROGRAMME PRINCIPAL ALORS ON EDITE
+COBOL                     IF (PATH-NB = ZERO) AND (DYNC-NB > ZERO)
+COBOL                        PERFORM WRITE-COMPTEUR
+COBOL                     END-IF
+COBOL                  END-IF
+COBOL
+COBOL       * APPEL TECHNIQUE POUR FORCER LA SORTIE DES COMPTEURS
+COBOL               WHEN KFON-FORCE-EDIT
+COBOL                  PERFORM WRITE-COMPTEUR
+COBOL
+COBOL            END-EVALUATE.
+COBOL
+COBOL       *----------------*
+COBOL        FIN-DE-PROGRAMME.
+COBOL            GOBACK.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL       * ON SE POSITIONNE SUR LE COMPTEUR DYNAMIQUE -> IDX-DYNC         *
+COBOL       *----------------------------------------------------------------*
+COBOL        FIND-KEY-TRACE.
+COBOL       *--------------*
+COBOL            MOVE K-FALSE                 TO W-TROUVE
+COBOL            SEARCH ALL DYNC
+COBOL              WHEN DYNC-KEY(IDX-DYNC) = WKEY-TRACE
+COBOL                 SET JAI-TROUVE          TO TRUE
+COBOL                 SET II                  TO IDX-DYNC
+COBOL            END-SEARCH
+COBOL            IF NOT JAI-TROUVE
+COBOL               PERFORM AJOUT-DYNC
+COBOL            END-IF.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL       * ON VIENT DE RECEVOIR UNE TRACE DE FIN DE PROGRAMME             *
+COBOL       * ON RECHERCHE LA TRACE D'INIT DU MEME PROGRAMME POUR CALCUL DE  *
+COBOL       * LA DUREE -> IDX-DYNC                                           *
+COBOL       * LA DUREE EST STOCKEE DANS LA TRACE "I"                         *
+COBOL       *----------------------------------------------------------------*
+COBOL        FIND-KEY-INIT.
+COBOL       *-------------*
+COBOL            SET II                       TO IDX-DYNC
+COBOL            MOVE K-FALSE                 TO W-TROUVE
+COBOL            PERFORM BOUCLE VARYING JJ
+COBOL               FROM II BY -1
+COBOL              UNTIL (JJ = ZERO)
+COBOL                 OR (DYNC-NOP(JJ) NOT = DYNC-NOP(II))
+COBOL                 OR (DYNC-TYP(JJ) = KFON-INIT)
+COBOL            IF (JJ > ZERO)
+COBOL            AND (DYNC-TYP(JJ) = KFON-INIT)
+COBOL               SET IDX-DYNC              TO JJ
+COBOL               SET JAI-TROUVE            TO TRUE
+COBOL            END-IF.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL       * AJOUT D'UN NOUVEAU COMPTEUR -> IDX-DYNC = POSITION DU COMPTEUR *
+COBOL       *----------------------------------------------------------------*
+COBOL        AJOUT-DYNC.
+COBOL       *----------*
+COBOL       * PLUS DE PLACE DANS LE TABLEAU DES TRACES
+COBOL            IF (DYNC-NB NOT < DYNC-MAX) GO TO FIN-DE-PROGRAMME.
+COBOL
+COBOL       * AJOUT EN DERNIER
+COBOL            IF (DYNC-NB = ZERO)
+COBOL            OR (DYNC-KEY(DYNC-NB) < WKEY-TRACE)
+COBOL               ADD 1                     TO DYNC-NB
+COBOL               SET IDX-DYNC              TO DYNC-NB
+COBOL
+COBOL       * RECHERCHE DU POINT D'INSERTION
+COBOL            ELSE
+COBOL               PERFORM BOUCLE VARYING KK
+COBOL                  FROM 1 BY 1
+COBOL                 UNTIL (DYNC-KEY(KK) > WKEY-TRACE)
+COBOL               SET IDX-DYNC              TO KK
+COBOL
+COBOL       * DECALAGE EN PARTANT DE LA FIN
+COBOL               ADD 1                     TO DYNC-NB
+COBOL               PERFORM VARYING II
+COBOL                  FROM DYNC-NB BY -1
+COBOL                 UNTIL (II = KK)
+COBOL                  COMPUTE JJ = II - 1
+COBOL                  MOVE DYNC(JJ)          TO DYNC(II)
+COBOL               END-PERFORM
+COBOL
+COBOL            END-IF.
+COBOL
+COBOL       * INITIALISATION DE LA TRACE
+COBOL            MOVE WKEY-TRACE              TO DYNC-KEY (IDX-DYNC)
+COBOL            MOVE ZERO                    TO DYNC-CPT (IDX-DYNC)
+COBOL            MOVE ZERO                    TO DYNC-TIME(IDX-DYNC).
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL       * DUREE = COMPTEUR FIN - COMPTEUR DEBUT                          *
+COBOL       *----------------------------------------------------------------*
+COBOL        CALCUL-DUREE.
+COBOL       *------------*
+COBOL            PERFORM GET-MICRO-SECONDS
+COBOL
+COBOL            EVALUATE MS-FON
+COBOL
+COBOL       *     TOP DEBUT
+COBOL              WHEN KFON-INIT
+COBOL              WHEN KFON-BEGIN
+COBOL
+COBOL               SUBTRACT MICRO-SECONDS  FROM DYNC-TIME(IDX-DYNC)
+COBOL
+COBOL       *     TOP FIN
+COBOL              WHEN KFON-END
+COBOL              WHEN KFON-EXIT
+COBOL
+COBOL               ADD MICRO-SECONDS         TO DYNC-TIME(IDX-DYNC)
+COBOL
+COBOL
+COBOL            END-EVALUATE.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL       * RECHERCHE SI LE PATH EXISTE (MS-NOP = NUMERO DU PATH)          *
+COBOL       *----------------------------------------------------------------*
+COBOL        EMPILE-NOUVEAU-PGM.
+COBOL       *------------------*
+COBOL
+COBOL       * CONSTRUCTION DU PATH COURANT
+COBOL            ADD 1                        TO PATH-NB
+COBOL            MOVE MS-PGM                  TO PATH-PGM(PATH-NB)
+COBOL
+COBOL       * RECHERCHE DANS LA PILE DES PATHS
+COBOL            PERFORM BOUCLE VARYING II
+COBOL               FROM 1 BY 1
+COBOL              UNTIL (II > PILE-NB)
+COBOL                 OR (PATH-COURANT = PILE-PATH(II))
+COBOL            MOVE II                      TO MS-NOP WKEY-NOP
+COBOL
+COBOL       * NOUVEAU PATH
+COBOL            IF (II > PILE-NB)
+COBOL            AND (PILE-NB < PILE-MAX)
+COBOL               ADD 1                     TO PILE-NB
+COBOL               MOVE PATH-COURANT         TO PILE-PATH(PILE-NB)
+COBOL            END-IF.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL       * REMISE A BLANC DU DERNIER PGM DANS LE PATH                     *
+COBOL       *----------------------------------------------------------------*
+COBOL        DEPILE-PGM.
+COBOL       *----------*
+COBOL            MOVE SPACE                   TO PATH-PGM(PATH-NB)
+COBOL            SUBTRACT  1                FROM PATH-NB.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL       * RESTITUTION DE TOUS LES COMPTEURS                              *
+COBOL       *----------------------------------------------------------------*
+COBOL        WRITE-COMPTEUR.
+COBOL       *--------------*
+COBOL       * OUVERTURE DU FICHIER TRACE (OPTIONNEL, SINON DISPLAY)
+COBOL            OPEN I-O FIC-TRACE
+COBOL            IF FS-TRACE = ZERO OR 05 OR 97
+COBOL               SET OUTPUT-FILE           TO TRUE
+COBOL            ELSE
+COBOL               SET OUTPUT-DISPLAY        TO TRUE
+COBOL               DISPLAY "$$$BEGIN MOVESOL TRACE " ART-CLE-JOBSTEP
+COBOL            END-IF
+COBOL
+COBOL       * TRIM ART-CLE-JOBSTEP
+COBOL            PERFORM BOUCLE VARYING LL1
+COBOL               FROM LENGTH OF ART-CLE-JOBSTEP BY -1
+COBOL              UNTIL (LL1 = 1)
+COBOL                 OR (ART-CLE-JOBSTEP (LL1:1) NOT = SPACE).
+COBOL
+COBOL       * BOUCLE SUR TOUTES LES TRACES
+COBOL            PERFORM VARYING II
+COBOL               FROM 1 BY 1
+COBOL              UNTIL (II > DYNC-NB)
+COBOL
+COBOL               MOVE II                   TO ART-CLE-IND
+COBOL               MOVE DYNC-LIB(II)         TO ART-TRACE-LIB
+COBOL               MOVE DYNC-CPT(II)         TO ART-TRACE-NBR
+COBOL               MOVE DYNC-TIME(II)        TO ART-TRACE-TIME
+COBOL               MOVE DYNC-NOP(II)         TO JJ
+COBOL               MOVE PILE-PATH(JJ)        TO ART-TRACE-PATH
+COBOL
+COBOL       * TRIM ART-TRACE-LIB
+COBOL               PERFORM BOUCLE VARYING LL2
+COBOL                  FROM LENGTH OF ART-TRACE-LIB BY -1
+COBOL                 UNTIL (LL2 = 1)
+COBOL                    OR (ART-TRACE-LIB(LL2:1) NOT = SPACE)
+COBOL
+COBOL       * TRIM ART-TRACE-PATH
+COBOL               PERFORM BOUCLE VARYING LL3
+COBOL                  FROM LENGTH OF ART-TRACE-PATH BY -1
+COBOL                 UNTIL (LL3 = 1)
+COBOL                    OR (ART-TRACE-PATH(LL3:1) NOT = SPACE)
+COBOL
+COBOL       * CSV TRACE
+COBOL               IF OUTPUT-DISPLAY
+COBOL                  MOVE ART-TRACE-TIME       TO MICRO-SECONDS-Z
+COBOL                  STRING
+COBOL                    ART-CLE-AMJ               ';'
+COBOL                    ART-CLE-HMSC              ';'
+COBOL                    ART-CLE-JOBSTEP(1:LL1)    ';'
+COBOL                    ART-CLE-IND               ';'
+COBOL                    ART-TRACE-NBR             ';'
+COBOL                    MICRO-SECONDS-Z           ';'
+COBOL                    ART-TRACE-LIB(1:LL2)      ';'
+COBOL                    ART-TRACE-PATH(1:LL3)
+COBOL                  DELIMITED BY SIZE
+COBOL                  INTO ART-TRACE-EDIT
+COBOL                  DISPLAY ART-TRACE-EDIT
+COBOL
+COBOL       * FILE TRACE
+COBOL               ELSE
+COBOL                  WRITE FD-ART-TRACE FROM ART-TRACE
+COBOL               END-IF
+COBOL
+COBOL            END-PERFORM.
+COBOL
+COBOL       * FERMETURE DU FICHIER OPTIONNEL
+COBOL            IF OUTPUT-FILE
+COBOL               CLOSE FIC-TRACE
+COBOL            ELSE
+COBOL               DISPLAY "$$$END"
+COBOL            END-IF.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL       * MICRO-SECONDS S9(18) COMPTEUR EN MICRO SECONDE
+COBOL       * 2 APPELS SUCCESSIFS PERMET DE RECUPERER UNE DUREE
+COBOL       *----------------------------------------------------------------*
+COBOL       ******************************************************************
+COBOL       * MICRO-SECONDS PIC S9(18) COMPTEUR EN MICRO SECONDE
+COBOL       * 2 APPELS SUCCESSIFS PERMET DE RECUPERER UNE DUREE
+COBOL       *----------------------------------------------------------------*
+COBOL        GET-MICRO-SECONDS.
+COBOL       *-----------------*
+COBOL PC    *    DLL GETTICKCOUNT ECRITE EN DELPHI ET A METTRE
+COBOL PC    *    DANS LE REPERTOIRE DU PGM COBOL EXECUTE
+COBOL PC    *    CALL "GETTICKCOUNT.DLL" USING MICRO-SECONDS.
+COBOL
+COBOL UNIX  *    CALL "GETTIMEOFDAY" USING
+COBOL UNIX  *       BY REFERENCE TIMEVAL-32BIT
+COBOL UNIX  *       BY VALUE     TZP
+COBOL UNIX  *    END-CALL.
+COBOL UNIX  *    COMPUTE MICRO-SECONDS = SECONDS * 1000000 + MICROSECONDS.
+COBOL
+COBOL MVS        SET ADDRESS OF X-GETMS-PTR TO NULL
+COBOL MVS        SET ADDRESS OF X-GETMS-PTR TO GETMS-PTR(136)
+COBOL MVS        SET GETMS-PTR-1P           TO GETMS-PTR(080)
+COBOL MVS        SET GETMS-PTR-2P           TO GETMS-PTR(081)
+COBOL MVS        MOVE GETMS-PTR-2X          TO GETMS-PTR-3X(5:)
+COBOL MVS        COMPUTE MICRO-SECONDS = GETMS-PTR-1 * 1048576
+COBOL MVS                              + GETMS-PTR-3 / 4096.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL        BOUCLE. EXIT.
+COBOL       ************************************************< FIN DU SOURCE >*
+COBOL ./ ADD NAME=TSTMVS2
+COBOL        IDENTIFICATION DIVISION.
+COBOL       ******************************************************************
+COBOL        PROGRAM-ID. TSTMVS2.
+COBOL       ******************************************************************
+COBOL        AUTHOR. MOVE SOLUTIONS.
+COBOL        ENVIRONMENT DIVISION.
+COBOL        CONFIGURATION SECTION.
+COBOL        SOURCE-COMPUTER. IBM-370.
+COBOL        OBJECT-COMPUTER. IBM-370.
+COBOL       ******************************************************************
+COBOL        DATA DIVISION.
+COBOL       *----------------------------------------------------------------*
+COBOL        WORKING-STORAGE SECTION.
+COBOL        77 K-TRAC PIC X(08) VALUE 'USPPACTR'.
+COBOL
+COBOL        77 P-VAR  PIC X(08) VALUE 'PLSVARIO'.
+COBOL
+COBOL
+COBOL           COPY USWPACTR.
+COBOL        01 cpt-wait  PIC 9(9) VALUE 0.
+COBOL        01 HEXA.
+COBOL           05  HEX               PIC  X(16) VALUE '0123456789ABCDEF'.
+COBOL           05  I11               PIC  9(04) COMP.
+COBOL           05  I12               PIC  9(04) COMP.
+COBOL           05  I21               PIC  9(04) COMP.
+COBOL           05  I22               PIC  9(04) COMP.
+COBOL           05  II                PIC  9(04) COMP.
+COBOL           05  IIX REDEFINES II  PIC  X(02).
+COBOL           05  JJ                PIC  9(04) COMP.
+COBOL           05  JJX REDEFINES JJ  PIC  X(02).
+COBOL           05  HXG.
+COBOL            06 HX  OCCURS 256    PIC  X(01).
+COBOL
+COBOL       ******************************************************************
+COBOL        PROCEDURE DIVISION.
+COBOL            MOVE "I000036" TO MS-PAR PERFORM CALL-PACTR
+COBOL
+COBOL            PERFORM VARYING II FROM 1 BY 1 UNTIL II > 256
+COBOL            MOVE "P000027" TO MS-PAR PERFORM CALL-PACTR
+COBOL               COMPUTE JJ = II - 1
+COBOL               MOVE JJX(2:1)     TO HX(II)
+COBOL            END-PERFORM.
+COBOL didier*     DISPLAY HXG.
+COBOL
+COBOL            MOVE "P000033" TO MS-PAR PERFORM CALL-PACTR
+COBOL            DISPLAY '===========< DEBUT DES TESTS TEST2 >========='
+COBOL
+COBOL            MOVE "B000036" TO MS-PAR PERFORM CALL-PACTR
+COBOL
+COBOL
+COBOL            PERFORM TEST-IDCRGM04
+COBOL
+COBOL
+COBOL            MOVE "E000042" TO MS-PAR PERFORM CALL-PACTR
+COBOL
+COBOL            DISPLAY '===========< FIN DES TESTS TEST2 >==========='
+COBOL
+COBOL            MOVE "X000046" TO MS-PAR PERFORM CALL-PACTR
+COBOL            MOVE ZERO TO RETURN-CODE
+COBOL            GOBACK.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL        TEST-IDCRGM04.
+COBOL            DISPLAY ' '
+COBOL            DISPLAY ' '
+COBOL            DISPLAY '--IDCRGM04-< DEBUT TEST TETS2 >----------------'
+COBOL            DISPLAY ' '
+COBOL            PERFORM VARYING cpt-wait FROM 1 BY 1 UNTIL cpt-wait > 999
+COBOL            MOVE "P000062" TO MS-PAR PERFORM CALL-PACTR
+COBOL            END-PERFORM.
+COBOL            PERFORM VARYING cpt-wait FROM 1 BY 1 UNTIL cpt-wait > 999
+COBOL            MOVE "P000065" TO MS-PAR PERFORM CALL-PACTR
+COBOL            END-PERFORM
+COBOL            .
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL
+COBOL
+COBOL       *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**
+COBOL        CALL-PACTR.
+COBOL            MOVE 'TESTDID2' TO MS-PGM
+COBOL            CALL K-TRAC USING MS-PARAM-TRACE.
+COBOL ./ ADD NAME=TSTMVS
+COBOL        IDENTIFICATION DIVISION.
+COBOL        PROGRAM-ID. TSTMVS.
+COBOL        AUTHOR. MOVE SOLUTIONS.
+COBOL        ENVIRONMENT DIVISION.
+COBOL        CONFIGURATION SECTION.
+COBOL        SOURCE-COMPUTER. IBM-370.
+COBOL        OBJECT-COMPUTER. IBM-370.
+COBOL       *----------------------------------------------------------------*
+COBOL        INPUT-OUTPUT SECTION.
+COBOL        FILE-CONTROL.
+COBOL            SELECT OPTIONAL FIC-FIC ASSIGN TO FICHIER
+COBOL               ORGANIZATION  SEQUENTIAL
+COBOL               FILE STATUS   FS-TRACE.
+COBOL       *----------------------------------------------------------------*
+COBOL        DATA DIVISION.
+COBOL        FILE SECTION.
+COBOL        FD  FIC-FIC.
+COBOL        01  FD-ART-TRACE  PIC X(80).
+COBOL       *----------------------------------------------------------------*
+COBOL        WORKING-STORAGE SECTION.
+COBOL        01  FS-TRACE                     PIC  X(02) VALUE SPACES.
+COBOL        01 FIN-FIC PIC X(1).
+COBOL        01 NBR-LUS  PIC 9(9) VALUE 0.
+COBOL
+COBOL        77 K-TRAC PIC X(08) VALUE 'USPPACTR'.
+COBOL MARC   77 K-TST2 PIC X(08) VALUE 'TSTMVS2'.
+COBOL
+COBOL        77 P-VAR  PIC X(08) VALUE 'PLSVARIO'.
+COBOL
+COBOL        77 C-LET  PIC X(08) VALUE 'IABELETT'.
+COBOL        77 P-LET  PIC X(08) VALUE 'PABELETT'.
+COBOL
+COBOL        77 C-IL   PIC X(08) VALUE 'CLALPHA '.
+COBOL        77 P-IL   PIC X(08) VALUE 'ILALPHA '.
+COBOL
+COBOL        77 C-910  PIC X(08) VALUE 'IEU910AB'.
+COBOL        77 P-910  PIC X(08) VALUE 'PEU910AB'.
+COBOL
+COBOL        77 C-NN   PIC X(08) VALUE 'CABCLNN2'.
+COBOL        77 P-NN   PIC X(08) VALUE 'IABCLNN2'.
+COBOL
+COBOL        77 C-IEU  PIC X(08) VALUE 'CEB900AB'.
+COBOL        77 P-IEU  PIC X(08) VALUE 'IEU900AB'.
+COBOL
+COBOL        77 C-ID   PIC X(08) VALUE 'CDCRGM04'.
+COBOL        77 P-ID   PIC X(08) VALUE 'IDCRGM04'.
+COBOL
+COBOL        77 C-03   PIC X(08) VALUE 'CLSYUT03'.
+COBOL        77 P-03   PIC X(08) VALUE 'PLSYUT03'.
+COBOL
+COBOL        77 C-08   PIC X(08) VALUE 'CLSYUT08'.
+COBOL        77 P-08   PIC X(08) VALUE 'PLSYUT08'.
+COBOL
+COBOL        77 C-Y2   PIC X(08) VALUE 'CLSYUTY2'.
+COBOL        77 P-Y2   PIC X(08) VALUE 'PLSYUTY2'.
+COBOL
+COBOL        77 C-IN   PIC X(08) VALUE 'CNUMERIC'.
+COBOL        77 P-IN   PIC X(08) VALUE 'ADEAINUM'.
+COBOL
+COBOL        77 C-AL   PIC X(08) VALUE 'CNBALPHA'.
+COBOL        77 P-AL   PIC X(08) VALUE 'ADEAINBA'.
+COBOL
+COBOL        77 C-05   PIC X(08) VALUE 'CREYUT05'.
+COBOL        77 P-05   PIC X(08) VALUE 'KREYUT05'.
+COBOL
+COBOL        77 C-06   PIC X(08) VALUE 'CREYUT06'.
+COBOL        77 P-06   PIC X(08) VALUE 'KREYUT06'.
+COBOL
+COBOL        77 DTJ    PIC S9(8) VALUE ZERO.
+COBOL
+COBOL        77 LL     PIC S9(3) COMP-3 VALUE ZERO.
+COBOL        77 LG     PIC  9(4) COMP   VALUE ZERO.
+COBOL        77 LGS    PIC S9(4) COMP   VALUE ZERO.
+COBOL
+COBOL        77 ZA-01  PIC X(01) VALUE SPACE.
+COBOL
+COBOL        77 L1     PIC 9(08) COMP VALUE ZERO.
+COBOL        77 L2     PIC 9(08) COMP VALUE ZERO.
+COBOL
+COBOL        77 ZA-18  PIC X(18) VALUE SPACE.
+COBOL        77 ZA-15  PIC X(15) VALUE SPACE.
+COBOL        77 Z9-15  PIC 9(15) VALUE ZERO.
+COBOL        77 Z9-15O PIC 9(15) VALUE ZERO.
+COBOL
+COBOL        77 ZA-11  PIC X(11) VALUE SPACE.
+COBOL        77 Z9-11  PIC 9(11) VALUE ZERO.
+COBOL        77 Z9-11O PIC 9(11) VALUE ZERO.
+COBOL
+COBOL        77 RETCD  PIC X(04) VALUE SPACE.
+COBOL        77 ALPH   PIC X(256) VALUE SPACE.
+COBOL        77 NUMR   PIC 9(11)V9(7) VALUE ZERO.
+COBOL
+COBOL        77 P1 PIC X(08).
+COBOL        77 P2 PIC X(08).
+COBOL        77 P3 PIC X(08).
+COBOL
+COBOL        01 AVANT.
+COBOL          05 SGN    PIC S9(3) COMP-3 VALUE ZERO.
+COBOL          05 DEC    PIC S9(3) COMP-3 VALUE ZERO.
+COBOL          05 RC     PIC  9(04).
+COBOL          05 RES    PIC  X(18).
+COBOL
+COBOL        01 APRES.
+COBOL          05 SGNO   PIC S9(3) COMP-3 VALUE ZERO.
+COBOL          05 DECO   PIC S9(3) COMP-3 VALUE ZERO.
+COBOL          05 RCO    PIC  9(04).
+COBOL          05 RESO   PIC  X(18).
+COBOL
+COBOL        01 WIEU-IMP PIC S9(17) COMP-3.
+COBOL
+COBOL          COPY IEU9002A.
+COBOL
+COBOL       * ZONE D'APPEL DE PLSVARIO
+COBOL        01  W-FUNC PIC X(5).
+COBOL        01  W-DD   PIC X(8).
+COBOL        01  W-REC.
+COBOL               03 W-LENG        PIC S9(04) COMP.
+COBOL               03 W-NOME-MODULO PIC  X(08).
+COBOL               03 FILLER        PIC  X(01).
+COBOL               03 W-TIPO-MODULO PIC  X(03).
+COBOL               03 FILLER        PIC  X(01).
+COBOL               03 W-IDENTIFIER  PIC  X(35).
+COBOL               03 FILLER        PIC  X(02).
+COBOL
+COBOL       * ZONE D'APPEL DE IABCLNN2
+COBOL        01 CABCLNN2-AREA.
+COBOL           05 I-AREA             PIC  X(80).
+COBOL           05 O-AREA       REDEFINES  I-AREA.
+COBOL              10 L-COGNOME       PIC  X(35).
+COBOL              10 L-NOME          PIC  X(25).
+COBOL              10 L-TITOLO        PIC  X(10).
+COBOL              10 L-TIPO-AZIENDA  PIC  X(10).
+COBOL
+COBOL       * ZONE D'APPEL DE IEU910AB
+COBOL        01 IEU910AB-AREA.
+COBOL           05 IEU910AB-MNT       PIC  X(12).
+COBOL           05 IEU910AB-DISP      PIC X(130).
+COBOL           05 IEU910AB-DISP2     PIC X(130).
+COBOL
+COBOL       * ZONE D'APPEL DE IABELETT
+COBOL        01 IABELETT-AREA.
+COBOL           05 IABELETT-LL        PIC S9(03) COMP-3.
+COBOL           05 IABELETT-IN        PIC  X(10).
+COBOL           05 IABELETT-OUT       PIC  X(15).
+COBOL           05 PABELETT-OUT       PIC  X(15).
+COBOL           05 IABELETT-RC        PIC  9(04).
+COBOL           05 PABELETT-RC        PIC  9(04).
+COBOL           05 LET-OK             PIC  X(02).
+COBOL        01 HEXA.
+COBOL           05  HEX               PIC  X(16) VALUE '0123456789ABCDEF'.
+COBOL           05  I11               PIC  9(04) COMP.
+COBOL           05  I12               PIC  9(04) COMP.
+COBOL           05  I21               PIC  9(04) COMP.
+COBOL           05  I22               PIC  9(04) COMP.
+COBOL           05  II                PIC  9(04) COMP.
+COBOL           05  IIX REDEFINES II  PIC  X(02).
+COBOL           05  JJ                PIC  9(04) COMP.
+COBOL           05  JJX REDEFINES JJ  PIC  X(02).
+COBOL           05  HXG.
+COBOL            06 HX  OCCURS 256    PIC  X(01).
+COBOL
+COBOL           COPY USWPACTR.
+COBOL        01 cpt-wait  PIC 9(9) VALUE 0.
+COBOL        01  MICRO-SECONDS           COMP PIC S9(18).
+COBOL        01  MICRO-SECONDS-Z              PIC ---B---B---B---B---B--9.
+COBOL
+COBOL UNIX  * SPECIFIQUE UNIX
+COBOL UNIX  *01  TIMEVAL-32BIT.
+COBOL UNIX  *     05 SECONDS      PIC X(4) COMP-5.
+COBOL UNIX  *     05 MICROSECONDS PIC X(4) COMP-5.
+COBOL UNIX  *77 TZP USAGE POINTER VALUE NULL.
+COBOL
+COBOL MVS   * SPECIFIQUE MVS - RECUP COMPTAGE EN MICRO SECONDE
+COBOL MVS    01 CPU-TIME-DEF-WORKING-STORAGE.
+COBOL MVS       03 GETMS-PTR-1          COMP PIC S9(08).
+COBOL MVS       03 GETMS-PTR-1P REDEFINES GETMS-PTR-1 POINTER.
+COBOL MVS       03 GETMS-PTR-2          COMP PIC S9(08).
+COBOL MVS       03 GETMS-PTR-2P REDEFINES GETMS-PTR-2 POINTER.
+COBOL MVS       03 GETMS-PTR-2X REDEFINES GETMS-PTR-2 PIC X(04).
+COBOL MVS       03 GETMS-PTR-3          COMP PIC S9(18) VALUE ZERO.
+COBOL MVS****   03 GETMS-PTR-3X REDEFINES GETMS-PTR-3 PIC X(08).	
+COBOL
+COBOL       ******************************************************************
+COBOL        PROCEDURE DIVISION.
+COBOL
+COBOL            MOVE "I000154" TO MS-PAR PERFORM CALL-PACTR
+COBOL
+COBOL            PERFORM VARYING II FROM 1 BY 1 UNTIL II > 256
+COBOL            MOVE "P000157" TO MS-PAR PERFORM CALL-PACTR
+COBOL               COMPUTE JJ = II - 1
+COBOL               MOVE JJX(2:1)     TO HX(II)
+COBOL            END-PERFORM.
+COBOL
+COBOL            MOVE "P000162" TO MS-PAR PERFORM CALL-PACTR
+COBOL            DISPLAY '===========< DEBUT DES TESTS >========='
+COBOL
+COBOL            MOVE "B000165" TO MS-PAR PERFORM CALL-PACTR
+COBOL
+COBOL            MOVE "N" TO FIN-FIC
+COBOL            OPEN INPUT FIC-FIC
+COBOL            MOVE "B000232" TO MS-PAR PERFORM CALL-PACTR
+COBOL            PERFORM UNTIL FIN-FIC = "O"
+COBOL                PERFORM READ-FIC THRU READ-FIC-X
+COBOL            END-PERFORM
+COBOL            CLOSE FIC-FIC
+COBOL
+COBOL            PERFORM TEST-IDCRGM04
+COBOL
+COBOL            CALL K-TST2
+COBOL
+COBOL            MOVE "E000165" TO MS-PAR PERFORM CALL-PACTR
+COBOL
+COBOL            DISPLAY '===========< FIN DES TESTS >==========='
+COBOL
+COBOL            MOVE "X000185" TO MS-PAR PERFORM CALL-PACTR
+COBOL            MOVE ZERO TO RETURN-CODE
+COBOL            GOBACK.
+COBOL
+COBOL       *----------------------------------------------------------------*
+COBOL        TEST-IDCRGM04.
+COBOL            DISPLAY ' '
+COBOL            DISPLAY ' '
+COBOL            DISPLAY '--IDCRGM04-< DEBUT TEST >----------------'
+COBOL            DISPLAY ' '
+COBOL            PERFORM VARYING cpt-wait FROM 1 BY 1 UNTIL cpt-wait > 999
+COBOL            MOVE "P000193" TO MS-PAR PERFORM CALL-PACTR
+COBOL            END-PERFORM.
+COBOL            PERFORM VARYING cpt-wait FROM 1 BY 1 UNTIL cpt-wait > 999
+COBOL            MOVE "P000195" TO MS-PAR PERFORM CALL-PACTR
+COBOL            END-PERFORM
+COBOL            .
+COBOL
+COBOL        CALL-PACTR.
+COBOL            MOVE 'TESTDID' TO MS-PGM
+COBOL            CALL K-TRAC USING MS-PARAM-TRACE.
+COBOL
+COBOL        READ-FIC.
+COBOL             MOVE "B000232" TO MS-PAR PERFORM CALL-PACTR
+COBOL             READ FIC-FIC
+COBOL                  AT END GO TO  READ-FIC-X
+COBOL              ADD 1 TO NBR-LUS
+COBOL              .
+COBOL
+COBOL        READ-FIC-X.
+COBOL            IF FS-TRACE = '10'
+COBOL               MOVE "O" TO FIN-FIC
+COBOL            END-IF
+COBOL            MOVE "E000232" TO MS-PAR PERFORM CALL-PACTR
+COBOL            EXIT.
+COBOL
+COBOL ./ ADD NAME=TSTTRI2
+COBOL        IDENTIFICATION DIVISION.
+COBOL        PROGRAM-ID. TSTTRI2.
+COBOL        ENVIRONMENT DIVISION.
+COBOL        INPUT-OUTPUT SECTION.
+COBOL        FILE-CONTROL.
+COBOL            SELECT ENTREE ASSIGN TO ENTREE.
+COBOL            SELECT SORTIE ASSIGN TO SORTIE.
+COBOL            SELECT WORK   ASSIGN TO WORK.
+COBOL        DATA DIVISION.
+COBOL        FILE SECTION.
+COBOL        FD ENTREE.
+COBOL        01 IN-ENR.
+COBOL           05 IN-KEY       PIC 9(05).
+COBOL           05 IN-DATA      PIC X(75).
+COBOL        FD SORTIE.
+COBOL        01 OUT-ENR.
+COBOL           05 OUT-KEY      PIC 9(05).
+COBOL           05 OUT-DATA     PIC X(75).
+COBOL        SD WORK.
+COBOL        01 WRK-ENR.
+COBOL           05 WRK-KEY      PIC 9(05).
+COBOL           05 WRK-DATA     PIC X(75).
+COBOL        WORKING-STORAGE SECTION.
+COBOL        01 FINFIC-FLAG     PIC X(01) VALUE SPACE.
+COBOL           88 FINFIC       VALUE 'Y'.
+COBOL        01 NB-LUS          PIC 9(9) VALUE 0.
+COBOL        01 NB-ECR          PIC 9(9) VALUE 0.
+COBOL
+COBOL        PROCEDURE DIVISION.
+COBOL
+COBOL            DISPLAY 'Sort in progress...'
+COBOL            SORT WORK
+COBOL                 ON ASCENDING KEY WRK-KEY
+COBOL                 INPUT  PROCEDURE A000-INPUT  THRU A999-DONE-INPUT
+COBOL                 OUTPUT PROCEDURE B000-OUTPUT THRU B999-DONE-OUTPUT
+COBOL            DISPLAY 'Sort done Successful'.
+COBOL            DISPLAY 'NB ENTREE LUS : ' NB-LUS
+COBOL            DISPLAY 'NB SORTIE ECR : ' NB-ECR
+COBOL            GOBACK.
+COBOL
+COBOL       *----------------------------------------------------------------
+COBOL       *   INPUT SECTION
+COBOL       *----------------------------------------------------------------
+COBOL        A000-INPUT SECTION.
+COBOL        A010-OPEN-INPUT.
+COBOL            OPEN INPUT ENTREE.
+COBOL        A020-READ-INPUT.
+COBOL            READ ENTREE AT END
+COBOL                CLOSE ENTREE
+COBOL                GO TO A999-DONE-INPUT.
+COBOL            MOVE IN-ENR TO WRK-ENR
+COBOL            RELEASE WRK-ENR.
+COBOL            GO TO A020-READ-INPUT.
+COBOL        A999-DONE-INPUT SECTION.
+COBOL            EXIT.
+COBOL
+COBOL       *----------------------------------------------------------------
+COBOL       *   OUTPUT SECTION
+COBOL       *----------------------------------------------------------------
+COBOL        B000-OUTPUT SECTION.
+COBOL        B010-OPEN-OUTPUT.
+COBOL            OPEN OUTPUT SORTIE.
+COBOL        B020-RETURN-SORT.
+COBOL            RETURN WORK AT END
+COBOL                CLOSE SORTIE
+COBOL                GO TO B999-DONE-OUTPUT.
+COBOL            MOVE WRK-ENR TO OUT-ENR
+COBOL            WRITE OUT-ENR.
+COBOL            GO TO B020-RETURN-SORT.
+COBOL        B999-DONE-OUTPUT SECTION.
+COBOL            EXIT.
+COBOL ./ ADD NAME=TSTTRI1
+COBOL        IDENTIFICATION DIVISION.
+COBOL        PROGRAM-ID. TSTTRI1.
+COBOL        ENVIRONMENT DIVISION.
+COBOL        INPUT-OUTPUT SECTION.
+COBOL        FILE-CONTROL.
+COBOL            SELECT ENTREE ASSIGN TO ENTREE.
+COBOL            SELECT SORTIE ASSIGN TO SORTIE.
+COBOL            SELECT WORK   ASSIGN TO WORK.
+COBOL        DATA DIVISION.
+COBOL        FILE SECTION.
+COBOL        FD ENTREE.
+COBOL        01 IN-ENR.
+COBOL           05 IN-KEY       PIC 9(05).
+COBOL           05 IN-DATA      PIC X(75).
+COBOL        FD SORTIE.
+COBOL        01 OUT-ENR.
+COBOL           05 OUT-KEY      PIC 9(05).
+COBOL           05 OUT-DATA     PIC X(75).
+COBOL        SD WORK.
+COBOL        01 WRK-ENR.
+COBOL           05 WRK-KEY      PIC 9(05).
+COBOL           05 WRK-DATA     PIC X(75).
+COBOL
+COBOL        PROCEDURE DIVISION.
+COBOL            DISPLAY 'Merge in progress...'
+COBOL            SORT WORK ON ASCENDING KEY WRK-KEY
+COBOL                 USING ENTREE GIVING SORTIE.
+COBOL            DISPLAY 'Sort Successful'.
+COBOL            GOBACK.
+COBOL ./ ADD NAME=TSTTRI3
+COBOL        IDENTIFICATION DIVISION.
+COBOL        PROGRAM-ID. TSTTRI3.
+COBOL        ENVIRONMENT DIVISION.
+COBOL        INPUT-OUTPUT SECTION.
+COBOL        FILE-CONTROL.
+COBOL            SELECT ENTRE1 ASSIGN TO ENTRE1.
+COBOL            SELECT ENTRE2 ASSIGN TO ENTRE2.
+COBOL            SELECT ENTRE3 ASSIGN TO ENTRE3.
+COBOL            SELECT ENTRE4 ASSIGN TO ENTRE4.
+COBOL            SELECT ENTRE5 ASSIGN TO ENTRE5.
+COBOL            SELECT ENTRE6 ASSIGN TO ENTRE6.
+COBOL            SELECT ENTRE7 ASSIGN TO ENTRE7.
+COBOL            SELECT ENTRE8 ASSIGN TO ENTRE8.
+COBOL            SELECT ENTRE9 ASSIGN TO ENTRE9.
+COBOL            SELECT SORTIE ASSIGN TO SORTIE.
+COBOL            SELECT WORK   ASSIGN TO WORK.
+COBOL        DATA DIVISION.
+COBOL        FILE SECTION.
+COBOL        FD ENTRE1.
+COBOL        01 IN-ENR1         PIC X(80).
+COBOL        FD ENTRE2.
+COBOL        01 IN-ENR2         PIC X(80).
+COBOL        FD ENTRE3.
+COBOL        01 IN-ENR3         PIC X(80).
+COBOL        FD ENTRE4.
+COBOL        01 IN-ENR4         PIC X(80).
+COBOL        FD ENTRE5.
+COBOL        01 IN-ENR5         PIC X(80).
+COBOL        FD ENTRE6.
+COBOL        01 IN-ENR6         PIC X(80).
+COBOL        FD ENTRE7.
+COBOL        01 IN-ENR7         PIC X(80).
+COBOL        FD ENTRE8.
+COBOL        01 IN-ENR8         PIC X(80).
+COBOL        FD ENTRE9.
+COBOL        01 IN-ENR9         PIC X(80).
+COBOL        FD SORTIE.
+COBOL        01 IN-OUT          PIC X(80).
+COBOL        SD WORK.
+COBOL        01 WRK-ENR.
+COBOL           05 WRK-KEY      PIC 9(05).
+COBOL           05 WRK-DATA     PIC X(75).
+COBOL        WORKING-STORAGE SECTION.
+COBOL        PROCEDURE DIVISION.
+COBOL
+COBOL            DISPLAY 'Merge in progress...'
+COBOL            MERGE WORK
+COBOL               ON ASCENDING KEY WRK-KEY
+COBOL               USING  ENTRE1 ENTRE2 ENTRE3 ENTRE4 ENTRE5
+COBOL                      ENTRE6 ENTRE7 ENTRE8 ENTRE9
+COBOL               GIVING SORTIE.
+COBOL            DISPLAY 'Merge Successful'.
+COBOL            GOBACK.
+COBOL
+COBOL ./ ADD NAME=PTRACE1
+COBOL        IDENTIFICATION DIVISION.
+COBOL        PROGRAM-ID. PTRACE1.
+COBOL        ENVIRONMENT DIVISION.
+COBOL        DATA DIVISION.
+COBOL        WORKING-STORAGE SECTION.
+COBOL        01 PGM-NAME PIC X(08) VALUE 'PTRACE1'.
+COBOL        01 EDIT               PIC  9(15).
+COBOL        01 CICS-ABEND         PIC  X(04) VALUE SPACE.
+COBOL        01 TIRET              PIC  X(80) VALUE ALL '-'.
+COBOL        01 MSG                PIC  X(79) VALUE SPACE.
+COBOL        01 LON                PIC  S9(4) COMP.
+COBOL        01 DATE-SEP           PIC  X(01) VALUE '-'.
+COBOL        01 TIME-SEP           PIC  X(01) VALUE ':'.
+COBOL        01 CICS-ABSTIME       PIC  S9(15) COMP-3.
+COBOL        01 CICS-YEAR          PIC  S9(08) COMP.
+COBOL        01 CICS-SIECLE        PIC  9(02).
+COBOL        01 CICS-YYMMDD.
+COBOL           05 CICS-YY         PIC  9(02).
+COBOL           05 FILLER          PIC  X(01).
+COBOL           05 CIS-MON         PIC  9(02).
+COBOL           05 FILLER          PIC  X(01).
+COBOL           05 CICS-DD         PIC  9(02).
+COBOL        01 CICS-TIME.
+COBOL           05 CICS-HH         PIC  9(02).
+COBOL           05 FILLER          PIC  X(01).
+COBOL           05 CICS-MIN        PIC  9(02).
+COBOL           05 FILLER          PIC  X(01).
+COBOL           05 CICS-SS         PIC  9(02).
+COBOL        LINKAGE SECTION.
+COBOL        01 DFHCOMMAREA        PIC X(1).
+COBOL        PROCEDURE DIVISION.
+COBOL
+COBOL            PERFORM CALL-TRAIT
+COBOL            EXEC CICS RETURN
+COBOL            END-EXEC.
+COBOL            GOBACK.
+COBOL
+COBOL       *-----------------------------------------------------------------
+COBOL       *     RECUPERATION DATE SYSTEME
+COBOL       *-----------------------------------------------------------------
+COBOL        RECUP-DATE.
+COBOL
+COBOL            EXEC CICS ASKTIME
+COBOL                 ABSTIME(CICS-ABSTIME)
+COBOL            END-EXEC.
+COBOL            EXEC CICS FORMATTIME
+COBOL                 ABSTIME(CICS-ABSTIME)
+COBOL                 YYMMDD(CICS-YYMMDD)
+COBOL                 YEAR(CICS-YEAR)
+COBOL                 DATESEP(DATE-SEP)
+COBOL                 TIME(CICS-TIME)
+COBOL                 TIMESEP(TIME-SEP)
+COBOL            END-EXEC.
+COBOL            MOVE CICS-YEAR         TO CICS-SIECLE
+COBOL            .
+COBOL
+COBOL       *-----------------------------------------------------------------
+COBOL       *     APPEL TRAITEMENT
+COBOL       *-----------------------------------------------------------------
+COBOL        CALL-TRAIT.
+COBOL
+COBOL            PERFORM RECUP-DATE
+COBOL            MOVE LENGTH OF MSG TO LON
+COBOL            INITIALIZE MSG
+COBOL            STRING
+COBOL               'LE '
+COBOL               CICS-SIECLE
+COBOL               CICS-YYMMDD
+COBOL               ' A '
+COBOL               CICS-TIME
+COBOL               ' : DEBUT DU TRAITEMENT '
+COBOL               PGM-NAME
+COBOL               DELIMITED BY SIZE INTO MSG
+COBOL            END-STRING
+COBOL            PERFORM DISP.
+COBOL *******    EXEC CICS LINK PROGRAMM(NOM-PROG) END-EXEC
+COBOL            .
+COBOL
+COBOL       *-----------------------------------------------------------------
+COBOL       *     DISP
+COBOL       *-----------------------------------------------------------------
+COBOL
+COBOL        DISP.
+COBOL            EXEC CICS
+COBOL               SEND TEXT FROM(MSG) LENGTH(LON)
+COBOL            END-EXEC
+COBOL            .
+COBOL
+COBOL
+COBOL ./ ADD NAME=PXCTL
+COBOL        IDENTIFICATION DIVISION.
+COBOL        PROGRAM-ID. PXCTL.
+COBOL        ENVIRONMENT DIVISION.
+COBOL        DATA DIVISION.
+COBOL        WORKING-STORAGE SECTION.
+COBOL        01 PGM-NAME           PIC X(08) VALUE 'PXCTL'.
+COBOL        01 PGM-SPRO           PIC X(08) VALUE 'PLINK'.
+COBOL        01 WS-PROG            PIC X(08).
+COBOL
+COBOL       *-----------------------------------------------------------------
+COBOL       *LINKAGE SECTION
+COBOL       *-----------------------------------------------------------------
+COBOL        LINKAGE SECTION.
+COBOL        01 DFHCOMMAREA.
+COBOL           05 WS-INPUT.
+COBOL              10 WS-NOM-APPEL PIC X(08).
+COBOL              10 WS-TYP-APPEL PIC X(02).
+COBOL           05 WS-OUTPUT.
+COBOL              10 FILLER       PIC X(85).
+COBOL           05 WS-RESP         PIC 9(08).
+COBOL
+COBOL       *-----------------------------------------------------------------
+COBOL       *PROCEDURE DIVISION
+COBOL       *-----------------------------------------------------------------
+COBOL        PROCEDURE DIVISION.
+COBOL
+COBOL            MOVE SPACE             TO WS-OUTPUT
+COBOL            MOVE EIBRESP           TO WS-RESP
+COBOL
+COBOL       *--  CONTROLES
+COBOL            EVALUATE TRUE
+COBOL            WHEN WS-RESP = ZERO
+COBOL               EVALUATE TRUE
+COBOL               WHEN WS-NOM-APPEL = 'PLINK'
+COBOL                  MOVE WS-NOM-APPEL   TO PGM-SPRO
+COBOL                  EVALUATE TRUE
+COBOL                     WHEN WS-TYP-APPEL = '01'
+COBOL                        PERFORM APPEL-01
+COBOL                     WHEN WS-TYP-APPEL = '02'
+COBOL                        PERFORM APPEL-02
+COBOL                     WHEN OTHER
+COBOL                        MOVE "FONCTION INCORRECTE"
+COBOL                                      TO WS-OUTPUT
+COBOL                        MOVE 02             TO WS-RESP
+COBOL                     END-EVALUATE
+COBOL               WHEN OTHER
+COBOL                  MOVE "PROGRAMME APPELANT INCORRECT"
+COBOL                                      TO WS-OUTPUT
+COBOL                  MOVE 01             TO WS-RESP
+COBOL               END-EVALUATE
+COBOL            WHEN OTHER
+COBOL               MOVE "PROBLEME APPEL PXCTL "
+COBOL                                      TO WS-OUTPUT
+COBOL            END-EVALUATE
+COBOL
+COBOL       *--  RETOUR PROGRAMME PRINCIPAL
+COBOL            EXEC CICS RETURN
+COBOL            END-EXEC.
+COBOL            .
+COBOL
+COBOL       *-----------------------------------------------------------------
+COBOL       *APPEL-01.
+COBOL       *-----------------------------------------------------------------
+COBOL        APPEL-01.
+COBOL            MOVE DFHEIBLK TO WS-OUTPUT
+COBOL            .
+COBOL
+COBOL       *-----------------------------------------------------------------
+COBOL       *APPEL-02.
+COBOL       *-----------------------------------------------------------------
+COBOL        APPEL-02.
+COBOL            MOVE DFHEIBLK TO WS-OUTPUT
+COBOL            .
+COBOL
+COBOL ./ ADD NAME=PLINK
+COBOL        IDENTIFICATION DIVISION.
+COBOL        PROGRAM-ID. PLINK.
+COBOL        ENVIRONMENT DIVISION.
+COBOL        DATA DIVISION.
+COBOL        WORKING-STORAGE SECTION.
+COBOL        01 PGM-NAME       PIC X(08) VALUE 'PLINK'.
+COBOL        01 WS-PROG        PIC X(08) VALUE 'PXCTL'.
+COBOL        01 ED-EIBTIME     PIC 9(8).
+COBOL        01 ED-EIBDATE     PIC 9(8).
+COBOL        01 ED-EIBCALEN    PIC 9(8).
+COBOL        01 WS-DFHEIBLK.
+COBOL           02 WS-EIBTIME  COMP-3 PIC S9(7).
+COBOL           02 WS-EIBDATE  COMP-3 PIC S9(7).
+COBOL           02 WS-EIBTRNID PIC X(4).
+COBOL           02 WS-EIBTASKN COMP-3 PIC S9(7).
+COBOL           02 WS-EIBTRMID PIC X(4).
+COBOL           02 WS-DFHEIGDI COMP PIC S9(4).
+COBOL           02 WS-EIBCPOSN COMP PIC S9(4).
+COBOL           02 WS-EIBCALEN COMP PIC S9(4).
+COBOL           02 WS-EIBAID   PIC X(1).
+COBOL           02 WS-EIBFN    PIC X(2).
+COBOL           02 WS-EIBRCODE PIC X(6).
+COBOL           02 WS-EIBDS    PIC X(8).
+COBOL           02 WS-EIBREQID PIC X(8).
+COBOL           02 WS-EIBRSRCE PIC X(8).
+COBOL           02 WS-EIBSYNC  PIC X(1).
+COBOL           02 WS-EIBFREE  PIC X(1).
+COBOL           02 WS-EIBRECV  PIC X(1).
+COBOL           02 WS-EIBFIL01 PIC X(1).
+COBOL           02 WS-EIBATT   PIC X(1).
+COBOL           02 WS-EIBEOC   PIC X(1).
+COBOL           02 WS-EIBFMH   PIC X(1).
+COBOL           02 WS-EIBCOMPL PIC X(1).
+COBOL           02 WS-EIBSIG   PIC X(1).
+COBOL           02 WS-EIBCONF  PIC X(1).
+COBOL           02 WS-EIBERR   PIC X(1).
+COBOL           02 WS-EIBERRCD PIC X(4).
+COBOL           02 WS-EIBSYNRB PIC X(1).
+COBOL           02 WS-EIBNODAT PIC X(1).
+COBOL           02 WS-EIBRESP  COMP PIC S9(8).
+COBOL           02 WS-EIBRESP2 COMP PIC S9(8).
+COBOL           02 WS-EIBRLDBK PIC X(1).
+COBOL        01 WS-COMMAREA.
+COBOL           05 WS-INPUT.
+COBOL              10 WS-NOM-APPEL PIC X(08).
+COBOL              10 WS-TYP-APPEL PIC X(02).
+COBOL              10 FILLER       PIC X(05).
+COBOL           05 WS-OUTPUT.
+COBOL              10 FILLER       PIC X(85).
+COBOL           05 WS-RESP         PIC 9(08).
+COBOL           05 FILLER          PIC X(12).
+COBOL        01 MSG                PIC X(79) VALUE SPACE.
+COBOL        PROCEDURE DIVISION.
+COBOL
+COBOL            MOVE PGM-NAME     TO WS-NOM-APPEL
+COBOL            MOVE '01'         TO WS-TYP-APPEL
+COBOL            MOVE SPACE        TO WS-OUTPUT
+COBOL            EXEC CICS
+COBOL                 INK PROGRAM (WS-PROG)
+COBOL                 COMMAREA     (WS-COMMAREA)
+COBOL                 LENGTH       (LENGTH OF WS-COMMAREA)
+COBOL            END-EXEC.
+COBOL
+COBOL            MOVE WS-OUTPUT    TO WS-DFHEIBLK
+COBOL            MOVE WS-EIBTIME   TO ED-EIBTIME
+COBOL            MOVE WS-EIBTIME   TO ED-EIBDATE
+COBOL            STRING
+COBOL               WS-PROG
+COBOL               ED-EIBTIME
+COBOL               ED-EIBDATE
+COBOL               WS-EIBTRNID
+COBOL               WS-EIBTRMID
+COBOL               WS-EIBAID
+COBOL               WS-EIBFN
+COBOL               WS-RESP
+COBOL               DELIMITED BY SIZE INTO MSG
+COBOL            END-STRING
+COBOL            PERFORM DISP
+COBOL
+COBOL            EXEC CICS RETURN
+COBOL            END-EXEC.
+COBOL
+COBOL       *-----------------------------------------------------------------
+COBOL       *     DISP
+COBOL       *-----------------------------------------------------------------
+COBOL        DISP.
+COBOL            EXEC CICS
+COBOL               SEND TEXT FROM(MSG) LENGTH(+79)
+COBOL            END-EXEC
+COBOL            .
+COBOL

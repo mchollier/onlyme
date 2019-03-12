@@ -1,0 +1,234 @@
+./ ADD NAME=TSTSORT1
+//TSTSORT1 JOB  (01427,,,99),'TEST SORT1',CLASS=C,MSGCLASS=Y,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//*---------------------------------------------------------------------
+//*-  TEST SORT
+//*---------------------------------------------------------------------
+//DEL001 EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(CYL,0),
+//            DSN=MSOL.WORK.SORT1
+//*---------------------------------------------------------------------
+//SORT01 EXEC PGM=SORT,PARM='DYNALLOC=(SYSDA,6)'
+//SYSOUT   DD  SYSOUT=*
+//SORTIN   DD  DSN=MSOL.WORK.SORT,DISP=SHR
+//SORTOUT  DD  DSN=MSOL.WORK.SORT1,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=080),
+//             SPACE=(CYL,(1,1),RLSE)
+//SYSIN    DD  *
+ INCLUDE COND=(1,1,CH,EQ,C'M',AND,
+               2,1,CH,EQ,C'A',AND,
+               3,1,CH,EQ,C'R',AND,
+               4,1,CH,EQ,C'C',AND,
+               5,1,CH,EQ,C' ',AND,
+               6,1,CH,EQ,C' ',AND,
+               7,1,CH,EQ,C' ',AND,
+               8,1,CH,EQ,C' ',AND,
+               9,1,CH,EQ,C' ',AND,
+              10,1,CH,EQ,C' ')
+* SORT FIELDS=(1,1,CH,A,  COMMENTAIRE
+  SORT FIELDS=(1,1,CH,A,  COMMENTAIRE
+               2,1,CH,A,  COMMENTAIRE
+               3,1,CH,A,  COMMENTAIRE
+               4,1,CH,A,  COMMENTAIRE
+               5,1,CH,A), COMMENTAIRE
+               EQUALS     COMMENTAIRE
+//*---------------------------------------------------------------------
+//*-  TEST SORT
+//*---------------------------------------------------------------------
+//DEL002 EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(CYL,0),
+//            DSN=MSOL.WORK.SORT2
+//*---------------------------------------------------------------------
+//SORT02 EXEC PGM=SORT,PARM='DYNALLOC=(SYSDA,6)'
+//SYSOUT   DD  SYSOUT=*
+//SORTIN   DD  DSN=MSOL.WORK.SORT,DISP=SHR
+//SORTOUT  DD  DSN=MSOL.WORK.SORT2,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=080),
+//             SPACE=(CYL,(1,1),RLSE)
+//SYSIN    DD  *
+  SORT FIELDS=(1,1,CH,A,  COMMENTAIRE
+               2,1,CH,A,  COMMENTAIRE
+*              3,1,CH,A,  COMMENTAIRE
+               4,1,CH,A,  COMMENTAIRE
+               5,1,CH,A) COMMENTAIRE
+//*---------------------------------------------------------------------
+//*-  TEST SORT
+//*---------------------------------------------------------------------
+//DEL003 EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(CYL,0),
+//            DSN=MSOL.WORK.SORT3
+//*---------------------------------------------------------------------
+//STEP03 EXEC PGM=SORT,PARM='DYNALLOC=(SYSDA,6)'
+//SYSOUT   DD  SYSOUT=*
+//SORTIN   DD  DSN=MSOL.WORK.SORT,DISP=SHR
+//SORTOUT  DD  DSN=MSOL.WORK.SORT3,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=080),
+//             SPACE=(CYL,(1,1),RLSE)
+//SYSIN    DD  *
+  SORT FIELDS=COPY
+/*
+//*---------------------------------------------------------------------
+//*-  TEST SORT
+//*---------------------------------------------------------------------
+//DEL004 EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(CYL,0),
+//            DSN=MSOL.WORK.SORT4
+//*---------------------------------------------------------------------
+//STEP04 EXEC PGM=SORT,PARM='DYNALLOC=(SYSDA,6)'
+//SYSOUT   DD  SYSOUT=*
+//SORTIN   DD  DSN=MSOL.WORK.SORT,DISP=SHR
+//SORTOUT  DD  DSN=MSOL.WORK.SORT4,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=080),
+//             SPACE=(CYL,(1,1),RLSE)
+//SYSIN    DD  *
+  SORT FIELDS=(10,1,A),FORMAT=CH COMMENTAIRE
+/*
+//*---------------------------------------------------------------------
+//*-  TEST SORT
+//*---------------------------------------------------------------------
+//DEL005 EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(CYL,0),
+//            DSN=MSOL.WORK.SORT5
+//*---------------------------------------------------------------------
+//STEP05 EXEC PGM=SORT,PARM='DYNALLOC=(SYSDA,6)'
+//SYSOUT   DD  SYSOUT=*
+//SORTIN   DD  DSN=MSOL.WORK.SORT,DISP=SHR
+//SORTOUT  DD  DSN=MSOL.WORK.SORT5,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=080),
+//             SPACE=(CYL,(1,1),RLSE)
+//SYSIN    DD  *
+  SORT FIELDS=(1,1,A,  COMMENTAIRE
+               2,1,A,  COMMENTAIRE
+               3,1,A,  COMMENTAIRE
+               4,1,A,  COMMENTAIRE
+               5,1,A)  COMMENTAIRE
+  SUM FIELDS=NONE
+  OUTREC FIELDS=(1,80)
+/*
+//*---------------------------------------------------------------------
+//*-  TEST SORT
+//*---------------------------------------------------------------------
+//DEL006 EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(CYL,0),
+//            DSN=MSOL.WORK.SORT6
+//*---------------------------------------------------------------------
+//STEP06 EXEC PGM=SORT,PARM='DYNALLOC=(SYSDA,6)'
+//SYSOUT   DD  SYSOUT=*
+//SORTIN   DD  DSN=MSOL.WORK.SORT,DISP=SHR
+//SORTOUT  DD  DSN=MSOL.WORK.SORT6,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=080),
+//             SPACE=(CYL,(1,1),RLSE)
+//SYSIN    DD  *
+  SORT FIELDS=(1,1,A,  COMMENTAIRE
+               2,1,A,  COMMENTAIRE
+               3,1,A,  COMMENTAIRE
+               4,1,A,  COMMENTAIRE
+               5,1,A), COMMENTAIRE
+       FORMAT=CH COMMENTAIRE
+  SUM FIELDS=NONE
+/*
+./ ADD NAME=TSTSORT2
+//TSTSORT2 JOB  (01427,,,99),'TEST SORT2',CLASS=C,MSGCLASS=Y,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//*---------------------------------------------------------------------
+//*-  TEST SORT
+//*---------------------------------------------------------------------
+//DEL001 EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(CYL,0),
+//            DSN=MSOL.WORK.SORT1
+//*---------------------------------------------------------------------
+//SORT01 EXEC PGM=SORT,PARM='DYNALLOC=(SYSDA,6)'
+//SYSOUT   DD  SYSOUT=*
+//SORTIN   DD  DSN=MSOL.WORK.SORT,DISP=SHR
+//SORTOUT  DD  DSN=MSOL.WORK.SORT1,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=080),
+//             SPACE=(CYL,(1,1),RLSE)
+//SYSIN    DD  *
+ INCLUDE COND=(1,1,CH,EQ,C'M',AND,
+               2,1,CH,EQ,C'A',AND,
+               3,1,CH,EQ,C'R',AND,
+               4,1,CH,EQ,C'C',AND,
+               5,1,CH,EQ,C' ',AND,
+               6,1,CH,EQ,C' ',AND,
+               7,1,CH,EQ,C' ',AND,
+               8,1,CH,EQ,C' ',AND,
+               9,1,CH,EQ,C' ',AND,
+              10,1,CH,EQ,C' ')
+  SORT FIELDS=(1,1,CH,A,                 COMMENTAIRE
+               2,1,CH,A,                 COMMENTAIRE
+               3,1,CH,A,                 COMMENTAIRE
+               4,1,CH,A,                 COMMENTAIRE
+               5,1,CH,A)                 COMMENTAIRE
+//*---------------------------------------------------------------------
+//*-  TEST SORT
+//*---------------------------------------------------------------------
+//DEL002 EXEC PGM=IEFBR14
+//F001     DD DISP=(MOD,DELETE),SPACE=(CYL,0),
+//            DSN=MSOL.WORK.SORT2
+//*---------------------------------------------------------------------
+//STEP02 EXEC PGM=SORT,PARM='DYNALLOC=(SYSDA,6)'
+//SYSOUT   DD  SYSOUT=*
+//SORTIN   DD  DSN=MSOL.WORK.SORT,DISP=SHR
+//SORTOUT  DD  DSN=MSOL.WORK.SORT2,
+//             DISP=(NEW,CATLG,DELETE),
+//             DCB=(RECFM=FB,LRECL=080),
+//             SPACE=(CYL,(1,1),RLSE)
+//SYSIN    DD  *
+  SORT FIELDS=(10,1,CH,A)                     COMMENTAIRE
+./ ADD NAME=TSTDEST1
+//TSTDEST1 JOB  (01427,,,99),'TEST DEST1',CLASS=C,MSGCLASS=Y,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//*---------------------------------------------------------------------
+//STEP01 EXEC PGM=TEST
+//ENTREE   DD  DISP=SHR,DSN=ENTREE
+//F42R820  DD  SYSOUT=(&SOUT,,8444),DEST=&ENV.&SIT  ETAT ANOMALIE
+//F42R822  DD  SYSOUT=(&SOUT,,DYN2),                ERREUR EXTR INTV
+//             DEST=&ENV.&SIT
+//F42R823  DD  SYSOUT=(&SOUT,,DYN2),                ERREUR EXTR POS
+//             DEST=&ENV.&SIT
+./ ADD NAME=TSTJOB1A
+//TSTJOB1  JOB  (01427,,,99),'TEST TSTJOB1',CLASS=C,MSGCLASS=Y,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//*---------------------------------------------------------------------
+//STEP01 EXEC PGM=TEST
+//ENTREE   DD  DISP=SHR,DSN=ENTREE
+//F42R820  DD  SYSOUT=(&SOUT,,8444),DEST=&ENV.&SIT  ETAT ANOMALIE
+//F42R822  DD  SYSOUT=(&SOUT,,DYN2),                ERREUR EXTR INTV
+//             DEST=&ENV.&SIT
+//F42R823  DD  SYSOUT=(&SOUT,,DYN2),                ERREUR EXTR POS
+//             DEST=&ENV.&SIT
+./ ADD NAME=TSTJOB2A
+//TSTJOB2  JOB  (01427,,,99),'TEST TSTJOB2',CLASS=C,MSGCLASS=Y,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//*---------------------------------------------------------------------
+//STEP01 EXEC PGM=TEST
+//ENTREE   DD  DISP=SHR,DSN=ENTREE
+//F42R820  DD  SYSOUT=(&SOUT,,8444),DEST=&ENV.&SIT  ETAT ANOMALIE
+//F42R822  DD  SYSOUT=(&SOUT,,DYN2),                ERREUR EXTR INTV
+//             DEST=&ENV.&SIT
+//F42R823  DD  SYSOUT=(&SOUT,,DYN2),                ERREUR EXTR POS
+//             DEST=&ENV.&SIT
+./ ADD NAME=TSTJOB3A
+//TSTJOB3  JOB  (01427,,,99),'TEST TSTJOB3',CLASS=C,MSGCLASS=Y,
+//         RESTART=*,
+//         NOTIFY=&SYSUID
+//*---------------------------------------------------------------------
+//STEP01 EXEC PGM=TEST
+//ENTREE   DD  DISP=SHR,DSN=ENTREE
+//F42R820  DD  SYSOUT=(&SOUT,,8444),DEST=&ENV.&SIT  ETAT ANOMALIE
+//F42R822  DD  SYSOUT=(&SOUT,,DYN2),                ERREUR EXTR INTV
+//             DEST=&ENV.&SIT
+//F42R823  DD  SYSOUT=(&SOUT,,DYN2),                ERREUR EXTR POS
+//             DEST=&ENV.&SIT
